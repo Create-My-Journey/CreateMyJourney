@@ -12,7 +12,8 @@
 }
 
 .attraction-title::before {
-  content: "⭐";
+  cursor: pointer;
+  /* content: "⭐"; */
   display: inline-block;
   width: 1em;
   margin-left: -1em;
