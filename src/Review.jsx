@@ -1,20 +1,21 @@
 import { useState } from 'react'
+import heroImg from './assets/hero.png'
 import './Review.css'
 
 function Day({dayIndex, attractions, onDragStart, onDragOver, onDrop}) {
     return (
         <section class = "day-card">
-            <h2> Day {dayIndex + 1} ! </h2>
+            <h2> 🛈 Day {dayIndex + 1}</h2>
             <ol class="attractions-container">
                 { attractions.map ( (attraction, index) => {
                     return <Attraction // dont forget to add keys to each attraction
-                        name={attraction}
+                        name={attraction['name']}
                         index={index}
                         dayIndex={dayIndex}
                         onDragStart={onDragStart}
                         onDragOver={onDragOver}
                         onDrop={onDrop}
-                        description="desc" 
+                        description={attraction['description']} 
                     />
                 } )}
             </ol>
@@ -30,8 +31,15 @@ function Attraction({name, index, dayIndex, onDragStart, onDragOver, onDrop, des
         onDragOver={(e) => onDragOver(e)}
         onDrop={(e) => onDrop(e, index, dayIndex)}
         >
-            <div class="attraction-title"> Attraction {name} !</div>
-            <p> Description {description} </p>
+            <div class="li-container">
+                <div class="text">
+                    <h3 class="attraction-title"> {name}</h3>
+                    <p> {description} </p>
+                </div>
+                <div class="attraction-image">
+                    <img src = {heroImg} className="list-image" alt="Attraction Image"></img>
+                </div>
+            </div>
         </li>
     )
 }
@@ -41,8 +49,36 @@ function Review() {
     // and it has to split it between multiple days
 
     const [attractions, setAttractions] = useState([
-        ["cool", "super-cool", "mega-cool"],
-        ["ultra-cool", "immensely-cool"]
+    [
+        { 
+        name: "Shibuya Crossing", 
+        description: "The world's busiest pedestrian intersection, surrounded by bright neon lights and giant screens." 
+        },
+        { 
+        name: "Meiji Jingu Shrine", 
+        description: "A serene Shinto shrine dedicated to Emperor Meiji, located in a lush forest in the heart of the city." 
+        },
+        { 
+        name: "Takeshita Street", 
+        description: "The epicenter of Tokyo's teenage street fashion and quirky snacks like giant colorful cotton candy." 
+        }
+    ],
+    [
+        { 
+        name: "Senso-ji Temple", 
+        description: "Tokyo's oldest and most significant Buddhist temple, featuring the iconic red Kaminarimon Gate." 
+        },
+        { 
+        name: "Tokyo Skytree", 
+        description: "The tallest structure in Japan, offering breathtaking 360-degree views of the entire Kanto region." 
+        }
+    ],
+    [
+        { 
+        name: "teamLab Planets", 
+        description: "An immersive digital art museum where you walk through water and interact with light installations." 
+        }
+    ]
     ]);
     
     const [draggedItem, setDraggedItem] = useState(null);
@@ -85,7 +121,7 @@ function Review() {
             <div class="days-container">
                 { attractions.map( (day, index) => {
                     return <Day
-                        key={day}
+                        key={index}
                         dayIndex={index}
                         attractions={day}
                         onDragStart={handleDragStart}

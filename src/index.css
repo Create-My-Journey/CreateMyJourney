@@ -5,6 +5,9 @@
   --primary-color: #20201f;
   --fonts: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   --spacing: 4rem;
+  --text-muted: #70757a;
+  --border-color: #dadce0;
+  --border-highlight: #ca9d3c;
 }
 
 h1 {
