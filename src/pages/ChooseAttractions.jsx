@@ -153,20 +153,20 @@ export default function ChooseAttractions({ navigate, user, login, logout, tripD
 
       {/* Page header */}
       <div className="ca-header">
-        <div className="ca-header-left">
-          <span className="ca-eyebrow">
-            {trip.location} · {trip.nights} nights · {trip.people} {trip.people === 1 ? 'person' : 'people'}
-          </span>
-          <h1 className="ca-title">Choose<br />Attractions</h1>
-          <p className="ca-subtitle">
-            Select the places you'd like to visit — we'll build your itinerary around them.
-          </p>
-        </div>
+        <span className="ca-eyebrow">
+          {trip.location} · {trip.nights} nights · {trip.people} {trip.people === 1 ? 'person' : 'people'}
+        </span>
+      <div className="ca-title-row">
+        <h1 className="ca-title">Choose Attractions</h1>
         <div className="ca-counter">
           <span className="ca-counter-num">{selected.size}</span>
           <span className="ca-counter-label">Selected</span>
         </div>
       </div>
+        <p className="ca-subtitle">
+          Select the places you'd like to visit — we'll build your itinerary around them.
+        </p>
+    </div>
 
       {/* Attractions list */}
       <main className="ca-main">

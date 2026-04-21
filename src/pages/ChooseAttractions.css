@@ -7,11 +7,28 @@
 /* ── Page header ── */
 .ca-header {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 1.5rem;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.6rem;
   padding: 3rem 3.5rem 2rem;
   border-bottom: 1px solid var(--border);
+}
+
+.ca-header-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.ca-header-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 820px;
 }
 
 .ca-header-left {
@@ -36,31 +53,39 @@
   color: var(--text);
 }
 
+.ca-title-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.2rem;
+}
+
 .ca-subtitle {
   font-size: 0.85rem;
   color: var(--text-muted);
   font-weight: 300;
-  margin-top: 0.5rem;
+  flex: 1;
+  text-align: center;
 }
 
 /* ── Selection counter ── */
 .ca-counter {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 0.2rem;
+  align-items: flex-start;
+  gap: 0;
+  padding-bottom: 0.4rem;
   flex-shrink: 0;
 }
 
 .ca-counter-num {
   font-family: 'Bebas Neue', cursive;
-  font-size: 3.5rem;
+  font-size: 2.2rem;
   line-height: 1;
   color: var(--text);
 }
 
 .ca-counter-label {
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--text-muted);
