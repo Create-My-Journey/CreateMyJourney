@@ -38,7 +38,12 @@ export default function Home({ navigate, user, login, logout }) {
   }
 
   const handleModeSelect = (mode) => {
-    // TODO: navigate to auto/manual page with formData
+    if (mode === 'manual') {
+      navigate('transport')
+      return
+    }
+
+    // TODO: navigate to auto page with formData
     alert(`Navigating to "${mode.toUpperCase()}" mode\n\nTrip: ${formData.location}\nDate: ${formData.date.toLocaleDateString()}\nNights: ${formData.nights}  ·  People: ${formData.people}`)
   }
 
