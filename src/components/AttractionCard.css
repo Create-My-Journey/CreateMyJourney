@@ -1,0 +1,210 @@
+.attraction-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: border-color var(--t), box-shadow var(--t);
+  animation: acSlideUp 0.4s ease both;
+}
+
+.attraction-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.attraction-card.selected {
+  border-color: var(--text);
+  box-shadow: 0 0 0 1px var(--text);
+}
+
+/* ── Header ── */
+.ac-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem 1.4rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* ── Checkbox ── */
+.ac-checkbox {
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid var(--border);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--bg);
+  transition: background var(--t), border-color var(--t);
+  color: var(--bg);
+}
+
+.selected .ac-checkbox {
+  background: var(--text);
+  border-color: var(--text);
+}
+
+/* ── Info ── */
+.ac-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ac-name {
+  font-weight: 500;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.ac-meta {
+  display: flex;
+  gap: 0.85rem;
+  margin-top: 0.2rem;
+}
+
+.ac-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* ── Chevron ── */
+.ac-chevron {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+  color: var(--text-muted);
+  transition: background var(--t);
+}
+
+.ac-header:hover .ac-chevron {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.ac-chevron svg {
+  transition: transform 0.3s ease;
+}
+
+.open .ac-chevron svg {
+  transform: rotate(180deg);
+}
+
+/* ── Collapsible body ── */
+.ac-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.open .ac-body {
+  max-height: 520px;
+}
+
+.ac-body-inner {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 1.4rem;
+  padding: 0 1.4rem 1.4rem;
+}
+
+/* ── Image ── */
+.ac-image {
+  width: 200px;
+  height: 150px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.ac-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ac-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-light);
+}
+
+/* ── Details ── */
+.ac-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ac-description {
+  font-size: 0.85rem;
+  line-height: 1.65;
+  color: var(--text-muted);
+  font-weight: 300;
+}
+
+.ac-tags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.ac-tag {
+  padding: 3px 10px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.ac-hours {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: auto;
+}
+
+/* ── Entry animation ── */
+@keyframes acSlideUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.attraction-card:nth-child(1) { animation-delay: 0.05s; }
+.attraction-card:nth-child(2) { animation-delay: 0.10s; }
+.attraction-card:nth-child(3) { animation-delay: 0.15s; }
+.attraction-card:nth-child(4) { animation-delay: 0.20s; }
+.attraction-card:nth-child(5) { animation-delay: 0.25s; }
+.attraction-card:nth-child(6) { animation-delay: 0.30s; }
+.attraction-card:nth-child(7) { animation-delay: 0.35s; }
+.attraction-card:nth-child(8) { animation-delay: 0.40s; }
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .ac-body-inner {
+    grid-template-columns: 1fr;
+  }
+  .ac-image {
+    width: 100%;
+    height: 180px;
+  }
+}

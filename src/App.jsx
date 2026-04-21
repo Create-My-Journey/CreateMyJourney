@@ -1,12 +1,16 @@
-import ChooseAttractionsPage from './pages/ChooseAttractionsPage';
-import './App.css'; // Keep this if you want the default Vite styles, or remove it if things look weird
+import ChooseAttractions from './pages/ChooseAttractions'
+import './App.css'
 
 function App() {
   return (
-    <div>
-      <ChooseAttractionsPage />
-    </div>
-  );
+    <ChooseAttractions
+      navigate={(page) => console.log('navigate to:', page)}
+      user={null}
+      login={() => {}}
+      logout={() => {}}
+      tripData={{ location: 'Tokyo, Japan', nights: 7, people: 2 }}
+    />
+  )
 }
 
-export default App;
+export default App
