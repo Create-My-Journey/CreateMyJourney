@@ -1,0 +1,76 @@
+.date-picker {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  box-shadow: var(--shadow-md);
+  z-index: 200;
+  width: 280px;
+  animation: dpFadeIn 0.15s ease;
+}
+
+@keyframes dpFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.dp-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+.dp-nav {
+  font-size: 1.2rem; color: var(--text-muted);
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius); transition: background var(--t);
+}
+.dp-nav:hover { background: var(--bg); color: var(--text); }
+
+.dp-header-center {
+  display: flex; gap: 0.3rem;
+}
+.dp-select {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.88rem; font-weight: 600;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 0.2rem 0.4rem; background: var(--surface);
+  color: var(--text); cursor: pointer;
+  outline: none;
+}
+.dp-select:focus { border-color: var(--border-focus); }
+
+.dp-day-names {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 0.25rem;
+}
+.dp-day-name {
+  text-align: center; font-size: 0.7rem; font-weight: 600;
+  color: var(--text-muted); padding: 0.2rem 0;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+
+.dp-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+.dp-cell {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  font-size: 0.82rem; border-radius: var(--radius);
+  transition: background var(--t), color var(--t);
+  color: var(--text);
+}
+.dp-cell:not(.dp-empty):not(.dp-past):not(.dp-selected):hover {
+  background: var(--bg); cursor: pointer;
+}
+.dp-empty { pointer-events: none; }
+.dp-past  { color: var(--text-light); pointer-events: none; }
+.dp-today {
+  font-weight: 700; text-decoration: underline;
+}
+.dp-selected {
+  background: var(--text) !important; color: #fff !important;
+  font-weight: 600;
+}
