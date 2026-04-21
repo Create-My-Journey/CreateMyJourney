@@ -114,7 +114,7 @@ export default function Transport({ navigate }) {
 	}
 
 	const handleSkip = () => {
-		navigate?.('home')
+		navigate?.('restaurants')
 	}
 
 	const handleConfirm = () => {
@@ -126,7 +126,7 @@ export default function Transport({ navigate }) {
 			chosenTypes,
 			minReviews,
 		})
-		navigate?.('home')
+		navigate?.('restaurants')
 	}
 
 	return (

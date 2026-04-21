@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Home from './pages/Home'
 import Register from './pages/Register'
 import Transport from './pages/Transport'
+import Restaurants from './pages/Restaurants'
 
 export default function App() {
   const [page, setPage] = useState('home')
@@ -35,5 +36,6 @@ export default function App() {
 
   if (page === 'register') return <Register {...props} />
   if (page === 'transport') return <Transport {...props} />
+  if (page === 'restaurants') return <Restaurants {...props} />
   return <Home {...props} />
 }
