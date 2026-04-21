@@ -1,0 +1,92 @@
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Hamburger button */
+.hamburger-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 6px;
+  border-radius: var(--radius);
+  transition: background var(--t);
+}
+.hamburger-btn:hover { background: rgba(0,0,0,0.06); }
+.hamburger-btn span {
+  display: block;
+  width: 22px; height: 2px;
+  background: var(--text);
+  border-radius: 2px;
+  transition: transform var(--t), opacity var(--t);
+}
+
+/* CMJ Logo */
+.navbar-logo {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 2rem;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  user-select: none;
+  transition: opacity var(--t);
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.navbar-logo:hover { opacity: 0.65; }
+
+/* Right side */
+.navbar-right {
+  position: relative;
+  margin-left: auto;
+}
+
+/* User badge (shown when logged in) */
+.user-badge {
+  background: var(--text);
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 0.5rem 1rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: background var(--t);
+}
+.user-badge:hover { background: #333; }
+.user-badge::after { content: ' ↩'; opacity: 0.5; }
+
+/* Login dropdown */
+.login-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.6rem);
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  width: 270px;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  z-index: 200;
+  animation: dpFadeIn 0.15s ease;
+}
+
+@keyframes dpFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  .navbar { padding: 0.75rem 1rem; }
+  .navbar-logo { font-size: 1.6rem; }
+}
