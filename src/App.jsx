@@ -37,5 +37,3 @@ export default function App() {
   if (page === 'transport') return <Transport {...props} />
   return <Home {...props} />
 }
-
-export default App
