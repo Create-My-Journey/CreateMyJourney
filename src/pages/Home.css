@@ -1,0 +1,74 @@
+.home-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 2rem 4rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ─── Hero ─── */
+.home-hero {
+  text-align: center;
+  padding: 2rem 0 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.hero-logo {
+  font-family: 'Bebas Neue', cursive;
+  font-size: clamp(6rem, 18vw, 13rem);
+  line-height: 0.9;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  user-select: none;
+}
+
+.hero-tagline {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  margin-top: 0.5rem;
+}
+
+/* ─── Sections ─── */
+.form-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.panels-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ─── Footer ─── */
+.home-footer {
+  text-align: center;
+  padding: 1.5rem;
+  font-size: 0.75rem;
+  color: var(--text-light);
+  border-top: 1px solid var(--border);
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+  .home-main { padding: 1rem 1rem 3rem; }
+  .hero-logo  { font-size: clamp(5rem, 22vw, 8rem); }
+}
