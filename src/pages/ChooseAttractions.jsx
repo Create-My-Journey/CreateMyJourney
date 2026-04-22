@@ -104,7 +104,7 @@ const TOKYO_ATTRACTIONS = [
   },
 ]
 
-export default function ChooseAttractions({ navigate, user, login, logout, tripData }) {
+export default function ChooseAttractions({ navigate, user, login, logout, tripData, restaurantList = [] }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [selected, setSelected] = useState(new Set())
 
@@ -126,12 +126,12 @@ export default function ChooseAttractions({ navigate, user, login, logout, tripD
     }
     const chosenAttractions = TOKYO_ATTRACTIONS.filter(a => selected.has(a.id))
     // TODO: pass chosenAttractions to the next page / itinerary generator
-    navigate('review', { attractionList: chosenAttractions, trip: trip })
+    navigate('review', { attractionList: chosenAttractions, restaurantList, trip: trip })
   }
 
   const handleSkip = () => {
     // TODO: navigate to itinerary without attractions
-    navigate('review', { attractionList: [], trip: trip })
+    navigate('review', { attractionList: [], restaurantList, trip: trip })
   }
 
   return (
