@@ -51,7 +51,7 @@ export default function Home({ navigate, user, login, logout }) {
 
   const handleJourneyClick = (journey) => {
     // TODO: navigate to review page
-    alert(`Opening journey: ${journey.location}`)
+    // alert(`Opening journey: ${journey.location}`)
     navigate('review', { attractionList: ATTRACTIONS, trip: TRIP_DETAILS })
   }
 
