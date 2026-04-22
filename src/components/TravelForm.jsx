@@ -26,7 +26,7 @@ const CITIES = [
   'Zurich, Switzerland', 'Geneva, Switzerland', 'Bern, Switzerland',
   'Stockholm, Sweden', 'Gothenburg, Sweden', 'Malmo, Sweden',
   'Copenhagen, Denmark', 'Oslo, Norway', 'Helsinki, Finland',
-  'Reykjavik, Iceland', 'Dublin, Ireland',
+  'Reykjavik, Iceland', 'Dublin, Ireland', 'Tokyo, Japan',
 ]
 
 const today = new Date()
