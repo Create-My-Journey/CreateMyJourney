@@ -5,19 +5,6 @@ html, body {
   height: 100%;
 }
 
-main {
-  min-height: 100vh;
-  width: 100vw;
-  
-  background-color: #e8f5e9; 
-  
-  background-image: url("https://www.transparenttextures.com/patterns/cubes.png"); 
-  background-repeat: repeat;
-  
-  position: relative;
-  padding-top: 40px;
-}
-
 .days-container {
     display: flex;
     flex-direction: column;
@@ -35,6 +22,9 @@ main {
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.text-container {
     border: 1px solid var(--border-color);
     border-radius: 8px;
 
@@ -50,8 +40,8 @@ main {
 }
 
 .list-image {
-  width: 80px;
-  height: 80px;
+  width: 300px;
+  height: 100px;
   transition: transform 0.3s ease-in-out;
 }
 
@@ -98,4 +88,8 @@ p {
 h3 {
     margin: 0px;
     padding: 0px;
+}
+
+h1 {
+  text-align: center;
 }

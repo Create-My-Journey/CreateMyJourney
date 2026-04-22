@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import heroImg from './assets/hero.png'
+import heroImg from '../assets/hero.png'
 import './Review.css'
 
 function Day({dayIndex, attractions, onDragStart, onDragOver, onDrop}) {
@@ -10,6 +10,7 @@ function Day({dayIndex, attractions, onDragStart, onDragOver, onDrop}) {
                 { attractions.map ( (attraction, index) => {
                     return <Attraction // dont forget to add keys to each attraction
                         name={attraction['name']}
+                        imageUrl={attraction['image']}
                         index={index}
                         dayIndex={dayIndex}
                         onDragStart={onDragStart}
@@ -23,7 +24,7 @@ function Day({dayIndex, attractions, onDragStart, onDragOver, onDrop}) {
     )
 }
 
-function Attraction({name, index, dayIndex, onDragStart, onDragOver, onDrop, description}) {
+function Attraction({name, index, dayIndex, imageUrl, onDragStart, onDragOver, onDrop, description}) {
     return (
         <li
         draggable="true"
@@ -32,54 +33,34 @@ function Attraction({name, index, dayIndex, onDragStart, onDragOver, onDrop, des
         onDrop={(e) => onDrop(e, index, dayIndex)}
         >
             <div class="li-container">
-                <div class="text">
+                <div class="text-container">
                     <h3 class="attraction-title"> {name}</h3>
                     <p> {description} </p>
                 </div>
                 <div class="attraction-image">
-                    <img src = {heroImg} className="list-image" alt="Attraction Image"></img>
+                    <img src = {imageUrl} className="list-image" alt="Attraction Image"></img>
                 </div>
             </div>
         </li>
     )
 }
 
-function Review() {
+function Review( { attractionList, trip, user }) {
     // this receives a list of attractions and restaurants
     // and it has to split it between multiple days
 
-    const [attractions, setAttractions] = useState([
-    [
-        { 
-        name: "Shibuya Crossing", 
-        description: "The world's busiest pedestrian intersection, surrounded by bright neon lights and giant screens." 
-        },
-        { 
-        name: "Meiji Jingu Shrine", 
-        description: "A serene Shinto shrine dedicated to Emperor Meiji, located in a lush forest in the heart of the city." 
-        },
-        { 
-        name: "Takeshita Street", 
-        description: "The epicenter of Tokyo's teenage street fashion and quirky snacks like giant colorful cotton candy." 
-        }
-    ],
-    [
-        { 
-        name: "Senso-ji Temple", 
-        description: "Tokyo's oldest and most significant Buddhist temple, featuring the iconic red Kaminarimon Gate." 
-        },
-        { 
-        name: "Tokyo Skytree", 
-        description: "The tallest structure in Japan, offering breathtaking 360-degree views of the entire Kanto region." 
-        }
-    ],
-    [
-        { 
-        name: "teamLab Planets", 
-        description: "An immersive digital art museum where you walk through water and interact with light installations." 
-        }
-    ]
-    ]);
+    console.log(attractionList);
+    
+    // split the attraction between the days
+    const splitDays = [];
+    const itemsPerDay = Math.ceil(attractionList.length / trip['nights']);
+    for (let i = 0; i < trip['nights']; i++) {
+        const start = i * itemsPerDay;
+        const end = start + itemsPerDay;
+        splitDays.push(attractionList.slice(start, end));
+    }
+
+    const [attractions, setAttractions] = useState(splitDays);
     
     const [draggedItem, setDraggedItem] = useState(null);
 

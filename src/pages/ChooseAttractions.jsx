@@ -109,7 +109,7 @@ export default function ChooseAttractions({ navigate, user, login, logout, tripD
   const [selected, setSelected] = useState(new Set())
 
   // tripData would come from the previous step; fallback to Tokyo placeholder
-  const trip = tripData || { location: 'Tokyo, Japan', nights: 7, people: 2 }
+  const trip = tripData || { location: 'Tokyo, Japan', nights: 2, people: 2 }
 
   const toggleSelect = (id) => {
     setSelected(prev => {
@@ -126,12 +126,12 @@ export default function ChooseAttractions({ navigate, user, login, logout, tripD
     }
     const chosenAttractions = TOKYO_ATTRACTIONS.filter(a => selected.has(a.id))
     // TODO: pass chosenAttractions to the next page / itinerary generator
-    navigate('itinerary', { attractions: chosenAttractions, trip })
+    navigate('review', { attractionList: chosenAttractions, trip: trip })
   }
 
   const handleSkip = () => {
     // TODO: navigate to itinerary without attractions
-    navigate('itinerary', { attractions: [], trip })
+    navigate('review', { attractionList: [], trip: trip })
   }
 
   return (

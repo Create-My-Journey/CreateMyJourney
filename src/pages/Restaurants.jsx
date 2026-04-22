@@ -89,7 +89,7 @@ function Restaurants({ navigate }) {
     }
 
     const handleSkip = () => {
-        navigate?.('home')
+        navigate?.('attractions')
     }
 
     const handleConfirm = () => {
@@ -100,7 +100,7 @@ function Restaurants({ navigate }) {
             maxBudget,
             minReviewScore,
         })
-        navigate?.('home')
+        navigate?.('attractions')
     }
 
     return (
