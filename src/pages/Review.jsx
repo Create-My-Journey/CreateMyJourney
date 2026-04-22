@@ -31,6 +31,9 @@ function Attraction({attraction, index, dayIndex, onDragStart, onDragOver, onDro
             onDragOver={(e) => onDragOver(e)}
             onDrop={(e) => onDrop(e, index, dayIndex)}
         >
+                    <span className={`item-type-label item-type-${(attraction.itemType || '').toLowerCase()}`}>
+                        {attraction.itemType || 'Item'}
+                    </span>
           <AttractionCard
             attraction={attraction}
             selected={true}
@@ -47,8 +50,13 @@ function Review( { attractionList = [], restaurantList = [], accommodationList =
     console.log(attractionList);
     console.log(restaurantList);
 
-    // combine all selected items into one itinerary list
-    const itineraryItems = [...transportList, ...accommodationList, ...restaurantList, ...attractionList];
+    // combine all selected items into one itinerary list and annotate their source type
+    const itineraryItems = [
+        ...transportList.map(item => ({ ...item, itemType: 'Transport' })),
+        ...accommodationList.map(item => ({ ...item, itemType: 'Accommodation' })),
+        ...restaurantList.map(item => ({ ...item, itemType: 'Restaurant' })),
+        ...attractionList.map(item => ({ ...item, itemType: 'Attraction' })),
+    ];
 
     // split itinerary items between the days
     const splitDays = [];
