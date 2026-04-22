@@ -1,6 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap');
 
 :root {
+  --header-size: 3rem;
+  --sub-header-size: 2rem;
+  --text-size: 1rem;
+  --primary-color: #20201f;
+  --fonts: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --spacing: 4rem;
+  --border-color: #dadce0;
+  --border-highlight: #ca9d3c;
   --bg: #f0ede6;
   --surface: #ffffff;
   --border: #d8d4cc;

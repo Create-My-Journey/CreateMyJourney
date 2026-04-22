@@ -72,7 +72,7 @@ const SEGMENTS = [
 
 const TRANSPORT_TYPES = ['Flight', 'Transit', 'Taxi', 'Bus']
 
-export default function Transport({ navigate }) {
+export default function Transport({ navigate, tripData }) {
 	const initialSelection = useMemo(
 		() =>
 			SEGMENTS.reduce((acc, segment) => {
@@ -93,6 +93,7 @@ export default function Transport({ navigate }) {
 		Bus: false,
 	})
 	const [minReviews, setMinReviews] = useState(3)
+	const trip = tripData || { location: 'Tokyo, Japan', nights: 2, people: 2 }
 
 	const updateSegmentSelection = (segmentId, optionId) => {
 		setSelectedBySegment((prev) => ({ ...prev, [segmentId]: optionId }))
@@ -114,11 +115,28 @@ export default function Transport({ navigate }) {
 	}
 
 	const handleSkip = () => {
-		navigate?.('restaurants')
+		navigate?.('accommodation', { transportList: [], trip })
 	}
 
 	const handleConfirm = () => {
 		const chosenTypes = TRANSPORT_TYPES.filter((type) => selectedTypes[type])
+		const selectedTransport = SEGMENTS.map((segment) => {
+			const chosenOption = segment.options.find((option) => option.id === selectedBySegment[segment.id])
+			if (!chosenOption) return null
+
+			return {
+				id: `transport-${segment.id}`,
+				name: chosenOption.label,
+				category: 'Transport',
+				hours: segment.title,
+				price: 'Varies',
+				rating: 4.6,
+				tags: ['Transport', ...chosenTypes],
+				description: chosenOption.description,
+				image: null,
+			}
+		}).filter(Boolean)
+
 		console.log('Transport selection', {
 			selectedBySegment,
 			sortBy,
@@ -126,7 +144,7 @@ export default function Transport({ navigate }) {
 			chosenTypes,
 			minReviews,
 		})
-		navigate?.('restaurants')
+		navigate?.('accommodation', { transportList: selectedTransport, trip })
 	}
 
 	return (

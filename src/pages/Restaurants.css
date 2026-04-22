@@ -1,0 +1,296 @@
+/* ── Page shell ── */
+.restaurants-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Page header (mirrors ca-header) ── */
+.restaurants-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.6rem;
+  padding: 3rem 3.5rem 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.restaurants-eyebrow {
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.restaurants-title-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.2rem;
+}
+
+.restaurants-title {
+  font-family: 'Bebas Neue', cursive;
+  font-size: clamp(3.2rem, 7vw, 5.5rem);
+  line-height: 0.92;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  margin: 0;
+}
+
+/* ── Selection counter (mirrors ca-counter) ── */
+.restaurants-counter {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding-bottom: 0.4rem;
+  flex-shrink: 0;
+}
+
+.restaurants-counter-num {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 2.2rem;
+  line-height: 1;
+  color: var(--text);
+}
+
+.restaurants-counter-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.restaurants-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 300;
+}
+
+/* ── Two-column content shell ── */
+.restaurants-shell {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 38%);
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2.5rem 3.5rem 9rem;
+  align-items: start;
+}
+
+/* ── Left: AttractionCard list ── */
+.restaurants-left {
+  min-width: 0;
+  padding-right: 2.5rem;
+  border-right: 1px solid var(--border);
+}
+
+.restaurants-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+/* ── Right: filters sidebar ── */
+.restaurants-right {
+  display: flex;
+  flex-direction: column;
+  padding-left: 2.5rem;
+  gap: 1.5rem;
+}
+
+.restaurants-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.tool-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.tool-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.tool-head h3 {
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.tool-icon {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1;
+}
+
+.tool-col select,
+.tool-col input[type='text'] {
+  width: 100%;
+  height: 40px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  background: transparent;
+  padding: 0 0.8rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem;
+  color: var(--text);
+  transition: border-color var(--t);
+}
+
+.tool-col select:focus,
+.tool-col input[type='text']:focus {
+  outline: none;
+  border-color: var(--text-muted);
+}
+
+.filter-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.line-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.2;
+}
+
+.tool-col input[type='range'] {
+  accent-color: var(--text);
+  width: 100%;
+  height: 4px;
+  cursor: pointer;
+}
+
+.value-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.value-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.value-col label {
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.value-col-single {
+  max-width: 52%;
+}
+
+/* ── Sticky footer (mirrors ca-footer) ── */
+.restaurants-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1.2rem 3.5rem 2rem;
+  background: linear-gradient(to top, var(--bg) 65%, transparent);
+  pointer-events: none;
+}
+
+.restaurants-footer .btn {
+  pointer-events: all;
+}
+
+/* ── Button system (mirrors ChooseAttractions) ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.6rem;
+  border-radius: 100px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: opacity var(--t), transform var(--t);
+  letter-spacing: 0.01em;
+}
+
+.btn:hover  { opacity: 0.82; transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1.5px solid var(--border);
+}
+
+.btn-ghost:hover {
+  border-color: var(--text-muted);
+  opacity: 1;
+}
+
+.btn-primary {
+  background: var(--text);
+  color: var(--bg);
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .restaurants-shell {
+    grid-template-columns: 1fr;
+    padding: 1.5rem 1.25rem 9rem;
+  }
+
+  .restaurants-left {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding-right: 0;
+    padding-bottom: 1.5rem;
+  }
+
+  .restaurants-right {
+    padding-left: 0;
+    padding-top: 1.5rem;
+  }
+
+  .value-col-single {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .restaurants-header {
+    padding: 2rem 1.25rem 1.5rem;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .restaurants-counter {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+
+  .restaurants-counter-num { font-size: 2.5rem; }
+
+  .restaurants-footer {
+    padding: 1rem 1.25rem 1.5rem;
+  }
+}
