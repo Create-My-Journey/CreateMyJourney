@@ -148,14 +148,23 @@ export default function Transport({ navigate, tripData }) {
 	}
 
 	return (
-		<div className="transport-page">
-			<main className="transport-shell" aria-label="Transport planner">
-				<section className="transport-left">
-					<h1 className="transport-title">Choose Transport</h1>
-					<p className="transport-subtitle">Demo journey: Bucharest to Tokyo to dinner spot to hotel</p>
+		<div className="tr-page">
+			{/* Page Header matching Choose Attractions */}
+			<div className="tr-header">
+				<span className="tr-eyebrow">Demo journey: Bucharest to Tokyo to dinner spot to hotel</span>
+				<div className="tr-title-row">
+					<h1 className="tr-title">Choose Transport</h1>
+				</div>
+				<p className="tr-subtitle">
+					Select your preferred routes and modes of transport for each leg of the journey.
+				</p>
+			</div>
 
-					<div className="transport-segments" role="region" aria-label="Trip segments">
-						<div className="segment-slider-head">
+			<main className="tr-main" aria-label="Transport planner">
+				<section className="tr-content" role="region" aria-label="Trip segments">
+					<div className="segment-slider-head">
+						<h2 className="segment-title">{activeSegment.title}</h2>
+						<div className="segment-nav-group">
 							<button
 								type="button"
 								className="segment-nav"
@@ -163,10 +172,10 @@ export default function Transport({ navigate, tripData }) {
 								disabled={activeSegmentIndex === 0}
 								aria-label="Previous segment"
 							>
-								‹
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6"/></svg>
 							</button>
 							<p className="segment-counter">
-								Step {activeSegmentIndex + 1}/{SEGMENTS.length}
+								{activeSegmentIndex + 1} / {SEGMENTS.length}
 							</p>
 							<button
 								type="button"
@@ -175,117 +184,130 @@ export default function Transport({ navigate, tripData }) {
 								disabled={activeSegmentIndex === SEGMENTS.length - 1}
 								aria-label="Next segment"
 							>
-								›
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
 							</button>
 						</div>
+					</div>
 
-						<section className="transport-segment" key={activeSegment.id}>
-							<h2 className="segment-title">{activeSegment.title}</h2>
-							<div className="segment-options">
-								{activeSegment.options.map((option) => {
-									const inputId = `${activeSegment.id}-${option.id}`
-									return (
-										<label className="transport-option" htmlFor={inputId} key={inputId}>
-											<input
-												id={inputId}
-												type="radio"
-												name={activeSegment.id}
-												checked={selectedBySegment[activeSegment.id] === option.id}
-												onChange={() => updateSegmentSelection(activeSegment.id, option.id)}
-											/>
-											<span className="option-copy">
-												<span className="option-label">{option.label}</span>
-												<span className="option-description">{option.description}</span>
-											</span>
-										</label>
-									)
-								})}
-							</div>
-						</section>
+					<div className="segment-options">
+						{activeSegment.options.map((option) => {
+							const inputId = `${activeSegment.id}-${option.id}`
+							const isSelected = selectedBySegment[activeSegment.id] === option.id;
+							
+							return (
+								<label 
+									className={`tr-option-card ${isSelected ? 'is-selected' : ''}`} 
+									htmlFor={inputId} 
+									key={inputId}
+								>
+									<input
+										id={inputId}
+										type="radio"
+										name={activeSegment.id}
+										checked={isSelected}
+										onChange={() => updateSegmentSelection(activeSegment.id, option.id)}
+									/>
+									<span className="option-copy">
+										<span className="option-label">{option.label}</span>
+										<span className="option-description">{option.description}</span>
+									</span>
+								</label>
+							)
+						})}
+					</div>
 
-						<div className="segment-dots" aria-label="Segment navigation">
-							{SEGMENTS.map((segment, index) => (
-								<button
-									type="button"
-									key={segment.id}
-									className={`segment-dot ${index === activeSegmentIndex ? 'is-active' : ''}`}
-									onClick={() => setActiveSegmentIndex(index)}
-									aria-label={`Go to segment ${index + 1}`}
-								/>
-							))}
-						</div>
+					<div className="segment-dots" aria-label="Segment navigation">
+						{SEGMENTS.map((segment, index) => (
+							<button
+								type="button"
+								key={segment.id}
+								className={`segment-dot ${index === activeSegmentIndex ? 'is-active' : ''}`}
+								onClick={() => setActiveSegmentIndex(index)}
+								aria-label={`Go to segment ${index + 1}`}
+							/>
+						))}
 					</div>
 				</section>
 
-				<aside className="transport-right" aria-label="Transport filters">
+				<aside className="tr-sidebar" aria-label="Transport filters">
 					<div className="filter-group">
-						<div className="sort-row">
-							<h3>Sort By</h3>
-							<span className="sort-icon" aria-hidden="true">^</span>
+						<h3>Sort By</h3>
+						<div className="select-wrapper">
+							<select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+								<option value="Best match">Best match</option>
+								<option value="Lowest price">Lowest price</option>
+								<option value="Fastest">Fastest</option>
+								<option value="Fewest transfers">Fewest transfers</option>
+							</select>
+							<svg className="select-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
 						</div>
-						<select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-							<option value="Best match">Best match</option>
-							<option value="Lowest price">Lowest price</option>
-							<option value="Fastest">Fastest</option>
-							<option value="Fewest transfers">Fewest transfers</option>
-						</select>
 					</div>
 
 					<div className="filter-group">
 						<h3>Filter By</h3>
 
-						<div className="budget-head">
-							<span>Total budget cap</span>
-							<span>$0-${maxBudget}</span>
+						<div className="filter-subgroup">
+							<div className="budget-head">
+								<span>Total budget cap</span>
+								<span>$0 - ${maxBudget}</span>
+							</div>
+							<input
+								type="range"
+								min="0"
+								max="2500"
+								step="50"
+								value={maxBudget}
+								onChange={(e) => setMaxBudget(Number(e.target.value))}
+							/>
+							<p className="filter-description">Includes flights + local rides for this demo itinerary</p>
 						</div>
-						<input
-							type="range"
-							min="0"
-							max="2500"
-							step="50"
-							value={maxBudget}
-							onChange={(e) => setMaxBudget(Number(e.target.value))}
-						/>
-						<p className="filter-description">Includes flights + local rides for this demo itinerary</p>
 
-						<div className="type-filter">
+						<div className="filter-subgroup">
 							<p className="filter-label">Type</p>
-							{TRANSPORT_TYPES.map((type) => (
-								<label className="check-row" key={type}>
-									<input
-										type="checkbox"
-										checked={selectedTypes[type]}
-										onChange={() => toggleType(type)}
-									/>
-									<span>{type}</span>
-								</label>
-							))}
+							<div className="check-group">
+								{TRANSPORT_TYPES.map((type) => (
+									<label className="check-row" key={type}>
+										<input
+											type="checkbox"
+											checked={selectedTypes[type]}
+											onChange={() => toggleType(type)}
+										/>
+										<span>{type}</span>
+									</label>
+								))}
+							</div>
 						</div>
 
-						<div className="review-filter">
+						<div className="filter-subgroup">
 							<p className="filter-label">Min provider rating</p>
-							{[3, 4, 5].map((stars) => (
-								<label className="check-row" key={stars}>
-									<input
-										type="radio"
-										name="min-reviews"
-										checked={minReviews === stars}
-										onChange={() => setMinReviews(stars)}
-									/>
-									<span>{stars}+ stars</span>
-								</label>
-							))}
+							<div className="check-group">
+								{[3, 4, 5].map((stars) => (
+									<label className="check-row" key={stars}>
+										<input
+											type="radio"
+											name="min-reviews"
+											checked={minReviews === stars}
+											onChange={() => setMinReviews(stars)}
+										/>
+										<span>{stars}+ stars</span>
+									</label>
+								))}
+							</div>
 						</div>
 					</div>
 				</aside>
 			</main>
 
-			<div className="transport-actions">
-				<button className="transport-btn transport-btn-ghost" onClick={handleSkip}>
+			{/* Sticky footer actions matching Choose Attractions */}
+			<div className="tr-footer">
+				<button className="btn btn-ghost" onClick={handleSkip}>
 					Skip Transport
 				</button>
-				<button className="transport-btn transport-btn-primary" onClick={handleConfirm}>
+				<button className="btn btn-primary" onClick={handleConfirm}>
 					Confirm
+					<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" width="14" height="14">
+						<path d="M3 8h10M9 4l4 4-4 4" />
+					</svg>
 				</button>
 			</div>
 		</div>
