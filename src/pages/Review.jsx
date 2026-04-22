@@ -40,7 +40,7 @@ function Attraction({attraction, index, dayIndex, onDragStart, onDragOver, onDro
     )
 }
 
-function Review( { attractionList = [], restaurantList = [], trip, user }) {
+function Review( { attractionList = [], restaurantList = [], trip, user, navigate }) {
     // this receives a list of attractions and restaurants
     // and it has to split it between multiple days
 
@@ -97,7 +97,7 @@ function Review( { attractionList = [], restaurantList = [], trip, user }) {
                 )) }
             </div>
 
-            {/* New Navigation Buttons */}
+
             <div className="review-footer-actions">
                 <button 
                     className="btn-secondary" 
