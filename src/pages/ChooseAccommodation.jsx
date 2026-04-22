@@ -80,7 +80,7 @@ const TOKYO_ACCOMMODATIONS = [
   },
 ]
 
-export default function ChooseAccommodation({ navigate, user, login, logout, tripData }) {
+export default function ChooseAccommodation({ navigate, user, login, logout, tripData, transportList = [] }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [selected, setSelected] = useState(null)
 
@@ -96,12 +96,23 @@ export default function ChooseAccommodation({ navigate, user, login, logout, tri
       return
     }
     const chosenAccommodation = TOKYO_ACCOMMODATIONS.find(a => a.id === selected)
-    // TODO: pass to next page
-    navigate('attractions', { accommodation: chosenAccommodation, trip })
+    const accommodationCardItem = {
+      id: `accommodation-${chosenAccommodation.id}`,
+      name: chosenAccommodation.name,
+      category: chosenAccommodation.type,
+      hours: chosenAccommodation.location,
+      price: chosenAccommodation.pricePerNight,
+      rating: chosenAccommodation.rating,
+      tags: chosenAccommodation.amenities,
+      description: chosenAccommodation.description,
+      image: chosenAccommodation.image,
+    }
+
+    navigate('restaurants', { accommodationList: [accommodationCardItem], transportList, trip })
   }
 
   const handleSkip = () => {
-    navigate('attractions', { accommodation: null, trip })
+    navigate('restaurants', { accommodationList: [], transportList, trip })
   }
 
   return (

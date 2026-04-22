@@ -71,6 +71,37 @@ li {
   margin-left: -2rem;
 }
 
+.item-type-label {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.item-type-transport {
+  background: #e6f4ff;
+  color: #0a4c8a;
+}
+
+.item-type-accommodation {
+  background: #eaf8ef;
+  color: #145a2c;
+}
+
+.item-type-restaurant {
+  background: #fff4e8;
+  color: #8a3f00;
+}
+
+.item-type-attraction {
+  background: #f4ecff;
+  color: #5b2f8a;
+}
+
 li .text {
     cursor: default;
 }
