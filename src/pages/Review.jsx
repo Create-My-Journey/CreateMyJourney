@@ -105,7 +105,7 @@ function Review( { attractionList = [], restaurantList = [], accommodationList =
                 )) }
             </div>
 
-            {/* New Navigation Buttons */}
+
             <div className="review-footer-actions">
                 <button 
                     className="btn-secondary" 
