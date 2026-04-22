@@ -5,11 +5,12 @@ import './Review.css'
 
 function Day({dayIndex, attractions, onDragStart, onDragOver, onDrop}) {
     return (
-        <section class = "day-card">
+        <section className="day-card">
             <h2> 🛈 Day {dayIndex + 1}</h2>
-            <ol class="attractions-container">
-                { attractions.map ( (attraction, index) => {
-                    return <Attraction // dont forget to add keys to each attraction
+            <ol className="attractions-container">
+                { attractions.map((attraction, index) => {
+                    return <Attraction 
+                        key={attraction.id || index} // Added key here
                         index={index}
                         dayIndex={dayIndex}
                         onDragStart={onDragStart}
@@ -17,7 +18,7 @@ function Day({dayIndex, attractions, onDragStart, onDragOver, onDrop}) {
                         onDrop={onDrop}
                         attraction={attraction}
                     />
-                } )}
+                })}
             </ol>
         </section>
     )
@@ -26,13 +27,12 @@ function Day({dayIndex, attractions, onDragStart, onDragOver, onDrop}) {
 function Attraction({attraction, index, dayIndex, onDragStart, onDragOver, onDrop}) {
     return (
         <li
-        draggable="true"
-        onDragStart={(e) => onDragStart(e, index, dayIndex)}
-        onDragOver={(e) => onDragOver(e)}
-        onDrop={(e) => onDrop(e, index, dayIndex)}
+            draggable="true"
+            onDragStart={(e) => onDragStart(e, index, dayIndex)}
+            onDragOver={(e) => onDragOver(e)}
+            onDrop={(e) => onDrop(e, index, dayIndex)}
         >
           <AttractionCard
-            key={attraction.id}
             attraction={attraction}
             selected={true}
           />
@@ -40,13 +40,11 @@ function Attraction({attraction, index, dayIndex, onDragStart, onDragOver, onDro
     )
 }
 
-function Review( { attractionList, trip, user }) {
-    // this receives a list of attractions and restaurants
-    // and it has to split it between multiple days
-
+// Added 'navigate' to the destructured props
+function Review({ attractionList, trip, user, navigate }) {
     console.log(attractionList);
     
-    // split the attraction between the days
+    // Split logic
     const splitDays = [];
     const itemsPerDay = Math.ceil(attractionList.length / trip['nights']);
     for (let i = 0; i < trip['nights']; i++) {
@@ -56,35 +54,19 @@ function Review( { attractionList, trip, user }) {
     }
 
     const [attractions, setAttractions] = useState(splitDays);
-    
     const [draggedItem, setDraggedItem] = useState(null);
 
     const handleDragStart = (e, index, dayIndex) => {
-        // store the data of the dragged item
-        const data = {
-            attractionIndex: index,
-            dayIndex: dayIndex
-        };
+        const data = { attractionIndex: index, dayIndex: dayIndex };
         setDraggedItem(data)
     };
 
-    const handleDragOver = (e) => {
-        e.preventDefault();
-    };
+    const handleDragOver = (e) => e.preventDefault();
 
     const handleDrop = (e, targetIndex, targetDayIndex) => {
         e.preventDefault();
-
-        // create a copy of the list of attractions for the target day
         const newList = [...attractions];
-
-        console.log(targetDayIndex);
-        console.log(draggedItem['dayIndex']);
-        
-        // remove the selected attraction from the initial position
         const removedAttraction = newList[draggedItem['dayIndex']].splice(draggedItem['attractionIndex'], 1);
-
-        // add it to the new position
         newList[targetDayIndex].splice(targetIndex, 0, removedAttraction[0]);
 
         setAttractions(newList);
@@ -92,11 +74,12 @@ function Review( { attractionList, trip, user }) {
     };
 
     return (
-        <main>
+        <main className="review-page">
             <h1>Review Trip Details</h1>
-            <div class="days-container">
-                { attractions.map( (day, index) => {
-                    return <Day
+            
+            <div className="days-container">
+                { attractions.map((day, index) => (
+                    <Day
                         key={index}
                         dayIndex={index}
                         attractions={day}
@@ -104,7 +87,23 @@ function Review( { attractionList, trip, user }) {
                         onDragOver={handleDragOver}
                         onDrop={handleDrop}
                     />
-                }) }
+                )) }
+            </div>
+
+            {/* New Navigation Buttons */}
+            <div className="review-footer-actions">
+                <button 
+                    className="btn-secondary" 
+                    onClick={() => navigate('transport')}
+                >
+                    Edit
+                </button>
+                <button 
+                    className="btn-primary" 
+                    onClick={() => navigate('home')}
+                >
+                    Create My Journey
+                </button>
             </div>
         </main>
     )
