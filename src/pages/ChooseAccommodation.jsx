@@ -84,7 +84,7 @@ export default function ChooseAccommodation({ navigate, user, login, logout, tri
   const [menuOpen, setMenuOpen] = useState(false)
   const [selected, setSelected] = useState(null)
 
-  const trip = tripData || { location: 'Tokyo, Japan', nights: 7, people: 2 }
+  const trip = tripData || { location: 'Tokyo, Japan', nights: 2, people: 2 }
 
   const handleSelect = (id) => {
     setSelected(prev => prev === id ? null : id)
