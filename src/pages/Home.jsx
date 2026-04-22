@@ -3,17 +3,19 @@ import Navbar         from '../components/Navbar'
 import HamburgerMenu  from '../components/HamburgerMenu'
 import TravelForm     from '../components/TravelForm'
 import ModePanels     from '../components/ModePanels'
+import { TRIP_DETAILS, ATTRACTIONS } from '../Journey'
 import './Home.css'
 
 // ── Mock journeys (replace with real API / localStorage later) ──
 const MOCK_JOURNEYS = [
-  { id: 1, location: 'Constanța, Romania',  startDate: '2026-04-02', nights: 3, people: 2 },
-  { id: 2, location: 'Sinaia, Romania',      startDate: '2026-03-15', nights: 5, people: 4 },
-  { id: 3, location: 'Paris, France',        startDate: '2026-02-10', nights: 7, people: 2 },
-  { id: 4, location: 'Budapest, Hungary',    startDate: '2025-12-20', nights: 4, people: 2 },
-  { id: 5, location: 'Brașov, Romania',      startDate: '2025-11-05', nights: 3, people: 3 },
-  { id: 6, location: 'Vienna, Austria',      startDate: '2025-09-12', nights: 6, people: 2 },
-  { id: 7, location: 'Rome, Italy',          startDate: '2025-07-20', nights: 8, people: 2 },
+  { id: 1, location: "Tokyo, Japan",   startDate: "2026-05-15", nights: 3, people: 2},
+  { id: 2, location: 'Constanța, Romania',  startDate: '2026-04-02', nights: 3, people: 2 },
+  { id: 3, location: 'Sinaia, Romania',      startDate: '2026-03-15', nights: 5, people: 4 },
+  { id: 4, location: 'Paris, France',        startDate: '2026-02-10', nights: 7, people: 2 },
+  { id: 5, location: 'Budapest, Hungary',    startDate: '2025-12-20', nights: 4, people: 2 },
+  { id: 6, location: 'Brașov, Romania',      startDate: '2025-11-05', nights: 3, people: 3 },
+  { id: 7, location: 'Vienna, Austria',      startDate: '2025-09-12', nights: 6, people: 2 },
+  { id: 8, location: 'Rome, Italy',          startDate: '2025-07-20', nights: 8, people: 2 },
 ]
 
 export default function Home({ navigate, user, login, logout }) {
@@ -50,6 +52,7 @@ export default function Home({ navigate, user, login, logout }) {
   const handleJourneyClick = (journey) => {
     // TODO: navigate to review page
     alert(`Opening journey: ${journey.location}`)
+    navigate('review', { attractionList: ATTRACTIONS, trip: TRIP_DETAILS })
   }
 
   return (
@@ -65,7 +68,7 @@ export default function Home({ navigate, user, login, logout }) {
       <HamburgerMenu
         isOpen={menuOpen}
         onClose={() => setMenuOpen(false)}
-        journeys={journeys}
+        journeys={MOCK_JOURNEYS}
         onJourneyClick={handleJourneyClick}
       />
 

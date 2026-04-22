@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import heroImg from '../assets/hero.png'
+import AttractionCard from '../components/AttractionCard'
 import './Review.css'
 
 function Day({dayIndex, attractions, onDragStart, onDragOver, onDrop}) {
@@ -9,14 +10,12 @@ function Day({dayIndex, attractions, onDragStart, onDragOver, onDrop}) {
             <ol class="attractions-container">
                 { attractions.map ( (attraction, index) => {
                     return <Attraction // dont forget to add keys to each attraction
-                        name={attraction['name']}
-                        imageUrl={attraction['image']}
                         index={index}
                         dayIndex={dayIndex}
                         onDragStart={onDragStart}
                         onDragOver={onDragOver}
                         onDrop={onDrop}
-                        description={attraction['description']} 
+                        attraction={attraction}
                     />
                 } )}
             </ol>
@@ -24,7 +23,7 @@ function Day({dayIndex, attractions, onDragStart, onDragOver, onDrop}) {
     )
 }
 
-function Attraction({name, index, dayIndex, imageUrl, onDragStart, onDragOver, onDrop, description}) {
+function Attraction({attraction, index, dayIndex, onDragStart, onDragOver, onDrop}) {
     return (
         <li
         draggable="true"
@@ -32,15 +31,11 @@ function Attraction({name, index, dayIndex, imageUrl, onDragStart, onDragOver, o
         onDragOver={(e) => onDragOver(e)}
         onDrop={(e) => onDrop(e, index, dayIndex)}
         >
-            <div class="li-container">
-                <div class="text-container">
-                    <h3 class="attraction-title"> {name}</h3>
-                    <p> {description} </p>
-                </div>
-                <div class="attraction-image">
-                    <img src = {imageUrl} className="list-image" alt="Attraction Image"></img>
-                </div>
-            </div>
+          <AttractionCard
+            key={attraction.id}
+            attraction={attraction}
+            selected={true}
+          />
         </li>
     )
 }
