@@ -28,7 +28,7 @@ const initialItems = [
     },
     {
         id: 5,
-        title: 'L\'Effervescence',
+        title: "L'Effervescence",
         description: 'Modern French-Japanese cuisine in Nishiazabu',
         checked: true,
     },
@@ -74,15 +74,19 @@ const initialItems = [
         description: 'Famous spicy miso ramen shop in Kanda',
         checked: true,
     },
-
 ]
 
-function Restaurants({ navigate }) {
+function Restaurants({ navigate, tripData }) {
     const [items, setItems] = useState(initialItems)
     const [sortBy, setSortBy] = useState('Reviews')
     const [minBudget, setMinBudget] = useState('')
     const [maxBudget, setMaxBudget] = useState('')
     const [minReviewScore, setMinReviewScore] = useState('')
+
+    // tripData from previous step; fallback to Tokyo placeholder
+    const trip = tripData || { location: 'Tokyo, Japan', nights: 2, people: 2 }
+
+    const selectedCount = items.filter((item) => item.checked).length
 
     const toggleItem = (id) => {
         setItems((prev) => prev.map((item) => (item.id === id ? { ...item, checked: !item.checked } : item)))
@@ -105,15 +109,38 @@ function Restaurants({ navigate }) {
 
     return (
         <div className="restaurants-page">
-            <main className="restaurants-shell" aria-label="Restaurant planner">
-                <section className="restaurants-left">
-                    <h1 className="restaurants-title">Choose Restaurants</h1>
 
+            {/* ── Page header ── */}
+            <div className="restaurants-header">
+                <span className="restaurants-eyebrow">
+                    {trip.location} · {trip.nights} nights · {trip.people} {trip.people === 1 ? 'person' : 'people'}
+                </span>
+                <div className="restaurants-title-row">
+                    <h1 className="restaurants-title">Choose Restaurants</h1>
+                    <div className="restaurants-counter">
+                        <span className="restaurants-counter-num">{selectedCount}</span>
+                        <span className="restaurants-counter-label">Selected</span>
+                    </div>
+                </div>
+                <p className="restaurants-subtitle">
+                    Pick the restaurants you'd like to dine at — we'll weave them into your itinerary.
+                </p>
+            </div>
+
+            {/* ── Two-column shell ── */}
+            <main className="restaurants-shell" aria-label="Restaurant planner">
+
+                {/* Left: list */}
+                <section className="restaurants-left">
                     <ul className="restaurants-list" aria-label="Restaurant options">
                         {items.map((item) => (
                             <li className="restaurant-item" key={item.id}>
                                 <label className="restaurant-row">
-                                    <input type="checkbox" checked={item.checked} onChange={() => toggleItem(item.id)} />
+                                    <input
+                                        type="checkbox"
+                                        checked={item.checked}
+                                        onChange={() => toggleItem(item.id)}
+                                    />
                                     <span className="restaurant-copy">
                                         <span className="restaurant-name">{item.title}</span>
                                         <span className="restaurant-description">{item.description}</span>
@@ -124,34 +151,31 @@ function Restaurants({ navigate }) {
                     </ul>
                 </section>
 
+                {/* Right: filters */}
                 <aside className="restaurants-right" aria-label="Restaurant filters">
                     <div className="restaurants-toolbar">
                         <div className="tool-col">
                             <div className="tool-head">
                                 <h3>Sort By</h3>
-                                <span className="tool-icon" aria-hidden="true">
-                                    ↗
-                                </span>
+                                <span className="tool-icon" aria-hidden="true">↗</span>
                             </div>
                             <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
                                 <option value="Reviews">Reviews</option>
                                 <option value="Rating">Rating</option>
                                 <option value="Price">Price</option>
                             </select>
-            </div>
+                        </div>
 
                         <div className="tool-col">
                             <div className="tool-head">
                                 <h3>Filter By</h3>
-                                <span className="tool-icon" aria-hidden="true">
-                                    ⏃
-                                </span>
+                                <span className="tool-icon" aria-hidden="true">⏃</span>
                             </div>
 
                             <div className="filter-block">
                                 <div className="line-row">
                                     <span>Budget</span>
-                                    <span>$0-100</span>
+                                    <span>$0–100</span>
                                 </div>
                                 <input type="range" min="0" max="100" defaultValue="100" />
                             </div>
@@ -182,7 +206,7 @@ function Restaurants({ navigate }) {
                             <div className="filter-block">
                                 <div className="line-row">
                                     <span>Review Score</span>
-                                    <span>0-5</span>
+                                    <span>0–5</span>
                                 </div>
                                 <input type="range" min="0" max="5" defaultValue="5" />
                             </div>
@@ -202,12 +226,16 @@ function Restaurants({ navigate }) {
                 </aside>
             </main>
 
-            <div className="restaurants-actions">
-                <button className="restaurants-btn" onClick={handleSkip}>
+            {/* ── Sticky footer ── */}
+            <div className="restaurants-footer">
+                <button className="btn btn-ghost" onClick={handleSkip}>
                     Skip Restaurants
                 </button>
-                <button className="restaurants-btn" onClick={handleConfirm}>
+                <button className="btn btn-primary" onClick={handleConfirm}>
                     Confirm
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" width="14" height="14">
+                        <path d="M3 8h10M9 4l4 4-4 4" />
+                    </svg>
                 </button>
             </div>
         </div>
