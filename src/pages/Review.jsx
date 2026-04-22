@@ -40,19 +40,24 @@ function Attraction({attraction, index, dayIndex, onDragStart, onDragOver, onDro
     )
 }
 
-function Review( { attractionList, trip, user }) {
+function Review( { attractionList = [], restaurantList = [], trip, user }) {
     // this receives a list of attractions and restaurants
     // and it has to split it between multiple days
 
     console.log(attractionList);
-    
-    // split the attraction between the days
+    console.log(restaurantList);
+
+    // combine selected attractions and restaurants into one itinerary list
+    const itineraryItems = [...attractionList, ...restaurantList];
+
+    // split itinerary items between the days
     const splitDays = [];
-    const itemsPerDay = Math.ceil(attractionList.length / trip['nights']);
-    for (let i = 0; i < trip['nights']; i++) {
+    const nights = Math.max(1, trip?.['nights'] || 1);
+    const itemsPerDay = Math.ceil(itineraryItems.length / nights);
+    for (let i = 0; i < nights; i++) {
         const start = i * itemsPerDay;
         const end = start + itemsPerDay;
-        splitDays.push(attractionList.slice(start, end));
+        splitDays.push(itineraryItems.slice(start, end));
     }
 
     const [attractions, setAttractions] = useState(splitDays);
