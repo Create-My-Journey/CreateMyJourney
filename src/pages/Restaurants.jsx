@@ -150,7 +150,7 @@ const TOKYO_RESTAURANTS = [
   },
 ]
 
-function Restaurants({ navigate, tripData }) {
+function Restaurants({ navigate, tripData, transportList = [], accommodationList = [] }) {
   const [selected, setSelected] = useState(new Set())
   const [sortBy, setSortBy] = useState('Reviews')
   const [minBudget, setMinBudget] = useState('')
@@ -168,12 +168,12 @@ function Restaurants({ navigate, tripData }) {
   }
 
   const handleSkip = () => {
-    navigate?.('attractions', { restaurantList: [], trip })
+    navigate?.('attractions', { restaurantList: [], accommodationList, transportList, trip })
   }
 
   const handleConfirm = () => {
     const chosenRestaurants = TOKYO_RESTAURANTS.filter(r => selected.has(r.id))
-    navigate?.('attractions', { restaurantList: chosenRestaurants, trip })
+    navigate?.('attractions', { restaurantList: chosenRestaurants, accommodationList, transportList, trip })
   }
 
   return (

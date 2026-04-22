@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Home from './pages/Home'
 import Register from './pages/Register'
 import Transport from './pages/Transport'
+import ChooseAccommodation from './pages/ChooseAccommodation'
 import Restaurants from './pages/Restaurants'
 import ChooseAttractions from './pages/ChooseAttractions'
 import Review from './pages/Review'
@@ -40,6 +41,7 @@ export default function App() {
 
   if (page === 'register') return <Register {...props} />
   if (page === 'transport') return <Transport {...props} />
+  if (page === 'accommodation') return <ChooseAccommodation {...props} />
   if (page === 'restaurants') return <Restaurants {...props} />
   if (page === 'attractions') return <ChooseAttractions {...props} />
   if (page === 'review') return <Review {...props} />

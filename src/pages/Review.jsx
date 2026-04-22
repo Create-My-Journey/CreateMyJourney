@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import heroImg from '../assets/hero.png'
 import AttractionCard from '../components/AttractionCard'
 import './Review.css'
 
@@ -35,20 +34,21 @@ function Attraction({attraction, index, dayIndex, onDragStart, onDragOver, onDro
           <AttractionCard
             attraction={attraction}
             selected={true}
+                        onToggleSelect={() => {}}
           />
         </li>
     )
 }
 
-function Review( { attractionList = [], restaurantList = [], trip, user }) {
-    // this receives a list of attractions and restaurants
+function Review( { attractionList = [], restaurantList = [], accommodationList = [], transportList = [], trip, user, navigate }) {
+    // this receives selected items from all previous planner pages
     // and it has to split it between multiple days
 
     console.log(attractionList);
     console.log(restaurantList);
 
-    // combine selected attractions and restaurants into one itinerary list
-    const itineraryItems = [...attractionList, ...restaurantList];
+    // combine all selected items into one itinerary list
+    const itineraryItems = [...transportList, ...accommodationList, ...restaurantList, ...attractionList];
 
     // split itinerary items between the days
     const splitDays = [];
