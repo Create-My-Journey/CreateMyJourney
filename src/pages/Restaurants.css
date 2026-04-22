@@ -44,7 +44,6 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0;
   padding-bottom: 0.4rem;
   flex-shrink: 0;
 }
@@ -72,10 +71,8 @@
 /* ── Two-column content shell ── */
 .restaurants-shell {
   flex: 1;
-  min-height: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(300px, 38%);
-  gap: 0;
   max-width: 1100px;
   width: 100%;
   margin: 0 auto;
@@ -83,62 +80,17 @@
   align-items: start;
 }
 
-/* ── Left: restaurant list ── */
+/* ── Left: AttractionCard list ── */
 .restaurants-left {
   min-width: 0;
-  display: flex;
-  flex-direction: column;
   padding-right: 2.5rem;
   border-right: 1px solid var(--border);
 }
 
 .restaurants-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
-}
-
-.restaurant-item {
-  padding-right: 0.5rem;
-}
-
-.restaurant-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  cursor: pointer;
-}
-
-.restaurant-row input[type='checkbox'] {
-  margin-top: 0.25rem;
-  accent-color: var(--text);
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  cursor: pointer;
-}
-
-.restaurant-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
-.restaurant-name {
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: var(--text);
-  line-height: 1.3;
-}
-
-.restaurant-description {
-  font-size: 0.82rem;
-  color: var(--text-muted);
-  font-weight: 300;
-  line-height: 1.4;
 }
 
 /* ── Right: filters sidebar ── */
@@ -146,7 +98,6 @@
   display: flex;
   flex-direction: column;
   padding-left: 2.5rem;
-  padding-top: 0;
   gap: 1.5rem;
 }
 
@@ -241,7 +192,6 @@
   font-size: 0.72rem;
   letter-spacing: 0.05em;
   color: var(--text-muted);
-  font-weight: 400;
 }
 
 .value-col-single {
