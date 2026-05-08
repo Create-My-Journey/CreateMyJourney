@@ -3,6 +3,7 @@ import Navbar from '../components/Navbar'
 import HamburgerMenu from '../components/HamburgerMenu'
 import AccommodationCard from '../components/AccommodationCard'
 import './ChooseAccommodation.css'
+import { useNavigate } from 'react-router-dom'
 
 // ── Placeholder accommodations for Tokyo ──
 const TOKYO_ACCOMMODATIONS = [
@@ -83,6 +84,7 @@ const TOKYO_ACCOMMODATIONS = [
 export default function ChooseAccommodation({ navigate, user, login, logout, tripData, transportList = [] }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [selected, setSelected] = useState(null)
+  const routerNavigate = useNavigate()
 
   const trip = tripData || { location: 'Tokyo, Japan', nights: 7, people: 2 }
 
@@ -108,11 +110,13 @@ export default function ChooseAccommodation({ navigate, user, login, logout, tri
       image: chosenAccommodation.image,
     }
 
-    navigate('restaurants', { accommodationList: [accommodationCardItem], transportList, trip })
+    // navigate('restaurants', { accommodationList: [accommodationCardItem], transportList, trip })
+    routerNavigate('/journey/attractions')
   }
 
   const handleSkip = () => {
-    navigate('restaurants', { accommodationList: [], transportList, trip })
+    // navigate('restaurants', { accommodationList: [], transportList, trip })
+    routerNavigate('/journey/attractions')
   }
 
   return (

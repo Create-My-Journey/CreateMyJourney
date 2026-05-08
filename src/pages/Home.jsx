@@ -5,6 +5,7 @@ import TravelForm     from '../components/TravelForm'
 import ModePanels     from '../components/ModePanels'
 import { TRIP_DETAILS, ATTRACTIONS } from '../Journey'
 import './Home.css'
+import { useNavigate } from 'react-router-dom'
 
 // ── Mock journeys (replace with real API / localStorage later) ──
 const MOCK_JOURNEYS = [
@@ -19,6 +20,9 @@ const MOCK_JOURNEYS = [
 ]
 
 export default function Home({ navigate, user, login, logout }) {
+
+  const routerNavigate = useNavigate();
+
   const [menuOpen,   setMenuOpen]   = useState(false)
   const [showPanels, setShowPanels] = useState(false)
   const [formData,   setFormData]   = useState(null)
@@ -41,7 +45,8 @@ export default function Home({ navigate, user, login, logout }) {
 
   const handleModeSelect = (mode) => {
     if (mode === 'manual') {
-      navigate('transport')
+      // navigate('transport')
+      routerNavigate('journey')
       return
     }
 
@@ -52,7 +57,8 @@ export default function Home({ navigate, user, login, logout }) {
   const handleJourneyClick = (journey) => {
     // TODO: navigate to review page
     // alert(`Opening journey: ${journey.location}`)
-    navigate('review', { attractionList: ATTRACTIONS, trip: TRIP_DETAILS })
+    // navigate('review', { attractionList: ATTRACTIONS, trip: TRIP_DETAILS })
+    routerNavigate('journey/review')
   }
 
   return (

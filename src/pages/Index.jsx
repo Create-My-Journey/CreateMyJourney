@@ -5,7 +5,7 @@ export default function Index() {
     <>
         <h1>Hey!</h1>
         <div class="form-actions">
-            <Link to="transport" className="btn btn-primary">Start the journey!</Link>
+            <Link to="accommodation" className="btn btn-primary">Start the journey!</Link>
         </div>
     </>
     )

@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { use, useState } from 'react'
 import AttractionCard from '../components/AttractionCard'
 import './Review.css'
+import { useNavigate } from 'react-router-dom'
 
 function Day({dayIndex, attractions, onDragStart, onDragOver, onDrop}) {
     return (
@@ -37,7 +38,7 @@ function Attraction({attraction, index, dayIndex, onDragStart, onDragOver, onDro
           <AttractionCard
             attraction={attraction}
             selected={true}
-                        onToggleSelect={() => {}}
+            onToggleSelect={() => {}}
           />
         </li>
     )
@@ -49,6 +50,7 @@ function Review( { attractionList = [], restaurantList = [], accommodationList =
 
     console.log(attractionList);
     console.log(restaurantList);
+    const routerNavigate = useNavigate();
 
     // combine all selected items into one itinerary list and annotate their source type
     const itineraryItems = [
@@ -109,13 +111,13 @@ function Review( { attractionList = [], restaurantList = [], accommodationList =
             <div className="review-footer-actions">
                 <button 
                     className="btn-secondary" 
-                    onClick={() => navigate('transport')}
+                    onClick={() => routerNavigate('/journey/transport')}
                 >
                     Edit
                 </button>
                 <button 
                     className="btn-primary" 
-                    onClick={() => navigate('home')}
+                    onClick={() => routerNavigate('/')}
                 >
                     Create My Journey
                 </button>

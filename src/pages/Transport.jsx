@@ -119,7 +119,8 @@ export default function Transport({ navigate, tripData }) {
 	}
 
 	const handleSkip = () => {
-		navigate?.('accommodation', { transportList: [], trip })
+		// navigate?.('accommodation', { transportList: [], trip })
+		routerNavigate('/journey/review');
 	}
 
 	const handleConfirm = () => {
@@ -149,7 +150,8 @@ export default function Transport({ navigate, tripData }) {
 			minReviews,
 		})
 
-		routerNavigate?.('accommodation', { transportList: selectedTransport, trip })
+		// navigate?.('accommodation', { transportList: selectedTransport, trip })
+		routerNavigate('/journey/review');
 	}
 
 	return (

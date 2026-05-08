@@ -3,6 +3,7 @@ import Navbar from '../components/Navbar'
 import HamburgerMenu from '../components/HamburgerMenu'
 import AttractionCard from '../components/AttractionCard'
 import './ChooseAttractions.css'
+import { useNavigate } from 'react-router-dom'
 
 // ── Placeholder attractions for Tokyo ──
 const TOKYO_ATTRACTIONS = [
@@ -107,6 +108,7 @@ const TOKYO_ATTRACTIONS = [
 export default function ChooseAttractions({ navigate, user, login, logout, tripData, restaurantList = [], accommodationList = [], transportList = [] }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [selected, setSelected] = useState(new Set())
+  const routerNavigate = useNavigate()
 
   // tripData would come from the previous step; fallback to Tokyo placeholder
   const trip = tripData || { location: 'Tokyo, Japan', nights: 2, people: 2 }
@@ -126,12 +128,14 @@ export default function ChooseAttractions({ navigate, user, login, logout, tripD
     }
     const chosenAttractions = TOKYO_ATTRACTIONS.filter(a => selected.has(a.id))
     // TODO: pass chosenAttractions to the next page / itinerary generator
-    navigate('review', { attractionList: chosenAttractions, restaurantList, accommodationList, transportList, trip: trip })
+    // navigate('review', { attractionList: chosenAttractions, restaurantList, accommodationList, transportList, trip: trip })
+    routerNavigate('/journey/restaurants')
   }
 
   const handleSkip = () => {
     // TODO: navigate to itinerary without attractions
-    navigate('review', { attractionList: [], restaurantList, accommodationList, transportList, trip: trip })
+    // navigate('review', { attractionList: [], restaurantList, accommodationList, transportList, trip: trip })
+    routerNavigate('/journey/restaurants')
   }
 
   return (
