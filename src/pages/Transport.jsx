@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useNavigate } from "react-router-dom";
 import './Transport.css'
 
 const SEGMENTS = [
@@ -73,6 +74,9 @@ const SEGMENTS = [
 const TRANSPORT_TYPES = ['Flight', 'Transit', 'Taxi', 'Bus']
 
 export default function Transport({ navigate, tripData }) {
+
+	const routerNavigate = useNavigate()
+
 	const initialSelection = useMemo(
 		() =>
 			SEGMENTS.reduce((acc, segment) => {
@@ -144,7 +148,8 @@ export default function Transport({ navigate, tripData }) {
 			chosenTypes,
 			minReviews,
 		})
-		navigate?.('accommodation', { transportList: selectedTransport, trip })
+
+		routerNavigate?.('accommodation', { transportList: selectedTransport, trip })
 	}
 
 	return (
