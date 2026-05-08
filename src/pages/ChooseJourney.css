@@ -1,5 +1,25 @@
-#sidebar {
+.sidebar {
+    position: sticky;
+    z-index: 100;
+    top: 0px;
     display: flex;
-    flex-direction: column;
-    min-height: 50vh;
+    padding: 0.2rem;
+    align-items: center;
+    justify-content: center;
+    background-color: white; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.nav-buttons {
+    flex: 0 0 50;
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 0.4rem; padding: 0.6rem 1.4rem; border-radius: var(--radius);
+    font-size: 1.5rem; font-weight: 600; letter-spacing: 0.02em;
+    transition: all var(--t);
+}
+
+a.active {
+    border-radius: 1rem;
+    color: saddlebrown;
+    transform: scale(1.2);
 }

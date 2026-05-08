@@ -90,3 +90,4 @@ ul     { list-style: none; }
   color: var(--text); font-weight: 500; cursor: pointer;
 }
 .register-link span:hover { text-decoration: underline; }
+

@@ -2,6 +2,7 @@ import { createContext } from "react"
 import { NavLink, Outlet } from "react-router-dom"
 import { useLocation } from "react-router-dom"
 import { useState, useEffect } from "react";
+import './ChooseJourney.css'
 
 export default function ChooseJourney() {
     const location = useLocation()
@@ -19,12 +20,13 @@ export default function ChooseJourney() {
 
     return(
         <>
-            <div id="sidebar">
-                <NavLink to='accommodation'> Accommodation </NavLink>
-                <NavLink to='attractions'> Attractions </NavLink>
-                <NavLink to='restaurants'> Restaurants </NavLink>
-                <NavLink to='transport'> Transport </NavLink>
-                <NavLink to='review'> Review </NavLink>
+            <div className="sidebar">
+                <NavLink className="nav-buttons" to='/'> Home </NavLink>
+                <NavLink className="nav-buttons" to='accommodation'> Accommodation </NavLink>
+                <NavLink className="nav-buttons" to='attractions'> Attractions </NavLink>
+                <NavLink className="nav-buttons" to='restaurants'> Restaurants </NavLink>
+                <NavLink className="nav-buttons" to='transport'> Transport </NavLink>
+                <NavLink className="nav-buttons" to='review'> Review </NavLink>
             </div>
             <Outlet context={[tripData, setTripData]} />
         </>
