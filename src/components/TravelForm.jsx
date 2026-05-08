@@ -117,27 +117,28 @@ export default function TravelForm({ onComplete }) {
   const handleSubmit = () => {
     let valid = true
 
-    if (!location) {
-      setLocationErr('Location is required'); valid = false
-    } else if (!locationValid) {
-      setLocationErr('We cannot find this location'); valid = false
-    }
+    // TODO: uncomment this to enable validation again
+    // if (!location) {
+    //   setLocationErr('Location is required'); valid = false
+    // } else if (!locationValid) {
+    //   setLocationErr('We cannot find this location'); valid = false
+    // }
 
-    if (!date) { setDateErr('Start date is required'); valid = false }
+    // if (!date) { setDateErr('Start date is required'); valid = false }
 
     const n = validateInt(nights)
-    if (!nights) {
-      setNightsErr('Number of nights is required'); valid = false
-    } else if (n === false) {
-      setNightsErr('Must be an integer bigger than 0'); valid = false
-    }
+    // if (!nights) {
+    //   setNightsErr('Number of nights is required'); valid = false
+    // } else if (n === false) {
+    //   setNightsErr('Must be an integer bigger than 0'); valid = false
+    // }
 
     const p = validateInt(people)
-    if (!people) {
-      setPeopleErr('Number of persons is required'); valid = false
-    } else if (p === false) {
-      setPeopleErr('Must be an integer bigger than 0'); valid = false
-    }
+    // if (!people) {
+    //   setPeopleErr('Number of persons is required'); valid = false
+    // } else if (p === false) {
+    //   setPeopleErr('Must be an integer bigger than 0'); valid = false
+    // }
 
     if (valid) {
       onComplete({ location, date, nights: n, people: p })

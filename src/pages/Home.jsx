@@ -1,9 +1,8 @@
-import { useState } from 'react'
+import { createContext, useState } from 'react'
 import Navbar         from '../components/Navbar'
 import HamburgerMenu  from '../components/HamburgerMenu'
 import TravelForm     from '../components/TravelForm'
 import ModePanels     from '../components/ModePanels'
-import { TRIP_DETAILS, ATTRACTIONS } from '../Journey'
 import './Home.css'
 import { useNavigate } from 'react-router-dom'
 
@@ -19,10 +18,10 @@ const MOCK_JOURNEYS = [
   { id: 8, location: 'Rome, Italy',          startDate: '2025-07-20', nights: 8, people: 2 },
 ]
 
-export default function Home({ navigate, user, login, logout }) {
+export const TravelContext = createContext({location: "", date: "", night: 0, people: 0});
 
+export default function Home({ user, login, logout }) {
   const routerNavigate = useNavigate();
-
   const [menuOpen,   setMenuOpen]   = useState(false)
   const [showPanels, setShowPanels] = useState(false)
   const [formData,   setFormData]   = useState(null)
@@ -30,6 +29,7 @@ export default function Home({ navigate, user, login, logout }) {
   const journeys = user ? MOCK_JOURNEYS : []
 
   const handleFormComplete = (data) => {
+    // log the data
     setFormData(data)
     setShowPanels(true)
     // Scroll to panels
@@ -39,14 +39,15 @@ export default function Home({ navigate, user, login, logout }) {
   }
 
   const handleFormChange = () => {
+    console.log("change")
     // If form changes after panels appear, hide panels
+    // TODO: fix this because it doesnt work
     if (showPanels) setShowPanels(false)
   }
 
   const handleModeSelect = (mode) => {
     if (mode === 'manual') {
-      // navigate('transport')
-      routerNavigate('journey')
+      routerNavigate('journey', {state: formData})
       return
     }
 
@@ -56,8 +57,6 @@ export default function Home({ navigate, user, login, logout }) {
 
   const handleJourneyClick = (journey) => {
     // TODO: navigate to review page
-    // alert(`Opening journey: ${journey.location}`)
-    // navigate('review', { attractionList: ATTRACTIONS, trip: TRIP_DETAILS })
     routerNavigate('journey/review')
   }
 
@@ -68,7 +67,6 @@ export default function Home({ navigate, user, login, logout }) {
         onLogin={login}
         onLogout={logout}
         onMenuClick={() => setMenuOpen(true)}
-        onNavigate={navigate}
       />
 
       <HamburgerMenu

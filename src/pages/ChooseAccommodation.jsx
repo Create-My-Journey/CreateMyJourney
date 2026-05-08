@@ -3,7 +3,9 @@ import Navbar from '../components/Navbar'
 import HamburgerMenu from '../components/HamburgerMenu'
 import AccommodationCard from '../components/AccommodationCard'
 import './ChooseAccommodation.css'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useContext } from 'react'
+import { useOutletContext } from 'react-router-dom'
 
 // ── Placeholder accommodations for Tokyo ──
 const TOKYO_ACCOMMODATIONS = [
@@ -81,12 +83,13 @@ const TOKYO_ACCOMMODATIONS = [
   },
 ]
 
-export default function ChooseAccommodation({ navigate, user, login, logout, tripData, transportList = [] }) {
+export default function ChooseAccommodation() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [selected, setSelected] = useState(null)
   const routerNavigate = useNavigate()
-
-  const trip = tripData || { location: 'Tokyo, Japan', nights: 7, people: 2 }
+  
+  const [tripDetails, setTripDetails] = useOutletContext();
+  const trip = tripDetails
 
   const handleSelect = (id) => {
     setSelected(prev => prev === id ? null : id)
@@ -110,24 +113,23 @@ export default function ChooseAccommodation({ navigate, user, login, logout, tri
       image: chosenAccommodation.image,
     }
 
-    // navigate('restaurants', { accommodationList: [accommodationCardItem], transportList, trip })
+    setTripDetails((prev) => ({
+    ...prev,
+    accommodation: [accommodationCardItem]
+    }));
     routerNavigate('/journey/attractions')
   }
 
   const handleSkip = () => {
-    // navigate('restaurants', { accommodationList: [], transportList, trip })
+    setTripDetails((prev) => ({
+    ...prev,
+    accommodation: []
+    }));
     routerNavigate('/journey/attractions')
   }
 
   return (
     <div className="ch-page">
-      <Navbar
-        user={user}
-        onLogin={login}
-        onLogout={logout}
-        onMenuClick={() => setMenuOpen(true)}
-        onNavigate={navigate}
-      />
 
       <HamburgerMenu
         isOpen={menuOpen}
