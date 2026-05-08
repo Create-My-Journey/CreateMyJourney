@@ -245,7 +245,7 @@ export default function TravelForm({ onComplete }) {
 
       <div className="form-actions">
         <button className="btn btn-primary form-submit-btn" onClick={handleSubmit}>
-          Plan My Journey ↗
+          Create My Journey ↗
         </button>
       </div>
     </div>
