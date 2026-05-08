@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useNavigate, useLocation, useOutletContext } from "react-router-dom";
 import './Transport.css'
 
 const SEGMENTS = [
@@ -72,7 +73,11 @@ const SEGMENTS = [
 
 const TRANSPORT_TYPES = ['Flight', 'Transit', 'Taxi', 'Bus']
 
-export default function Transport({ navigate, tripData }) {
+export default function Transport() {
+
+	const routerNavigate = useNavigate()
+	const [tripDetails, setTripDetails] = useOutletContext();
+
 	const initialSelection = useMemo(
 		() =>
 			SEGMENTS.reduce((acc, segment) => {
@@ -93,7 +98,6 @@ export default function Transport({ navigate, tripData }) {
 		Bus: false,
 	})
 	const [minReviews, setMinReviews] = useState(3)
-	const trip = tripData || { location: 'Tokyo, Japan', nights: 2, people: 2 }
 
 	const updateSegmentSelection = (segmentId, optionId) => {
 		setSelectedBySegment((prev) => ({ ...prev, [segmentId]: optionId }))
@@ -115,7 +119,11 @@ export default function Transport({ navigate, tripData }) {
 	}
 
 	const handleSkip = () => {
-		navigate?.('accommodation', { transportList: [], trip })
+		setTripDetails((prev) => ({
+		...prev,
+		transport: []
+		}));
+		routerNavigate('/journey/review')
 	}
 
 	const handleConfirm = () => {
@@ -144,7 +152,13 @@ export default function Transport({ navigate, tripData }) {
 			chosenTypes,
 			minReviews,
 		})
-		navigate?.('accommodation', { transportList: selectedTransport, trip })
+
+		// add the new information to the trip details
+		setTripDetails((prev) => ({
+		...prev,
+		transport: selectedTransport
+		}));
+		routerNavigate('/journey/review')
 	}
 
 	return (

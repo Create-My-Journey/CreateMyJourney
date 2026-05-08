@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { use, useState } from 'react'
 import AttractionCard from '../components/AttractionCard'
 import './Review.css'
+import { useNavigate, useLocation, useOutletContext } from 'react-router-dom'
 
 function Day({dayIndex, attractions, onDragStart, onDragOver, onDrop}) {
     return (
@@ -37,18 +38,23 @@ function Attraction({attraction, index, dayIndex, onDragStart, onDragOver, onDro
           <AttractionCard
             attraction={attraction}
             selected={true}
-                        onToggleSelect={() => {}}
+            onToggleSelect={() => {}}
           />
         </li>
     )
 }
 
-function Review( { attractionList = [], restaurantList = [], accommodationList = [], transportList = [], trip, user, navigate }) {
+function Review() {
     // this receives selected items from all previous planner pages
     // and it has to split it between multiple days
-
-    console.log(attractionList);
-    console.log(restaurantList);
+    const routerNavigate = useNavigate();
+    const [tripDetails, setTripDetails] = useOutletContext();
+        
+    console.log(tripDetails)
+    const transportList = tripDetails.transport || []
+    const accommodationList = tripDetails.accommodation || []
+    const restaurantList = tripDetails.restaurants || []
+    const attractionList = tripDetails.attractions || []
 
     // combine all selected items into one itinerary list and annotate their source type
     const itineraryItems = [
@@ -60,7 +66,7 @@ function Review( { attractionList = [], restaurantList = [], accommodationList =
 
     // split itinerary items between the days
     const splitDays = [];
-    const nights = Math.max(1, trip?.['nights'] || 1);
+    const nights = Math.max(1, tripDetails.nights || 1);
     const itemsPerDay = Math.ceil(itineraryItems.length / nights);
     for (let i = 0; i < nights; i++) {
         const start = i * itemsPerDay;
@@ -71,6 +77,7 @@ function Review( { attractionList = [], restaurantList = [], accommodationList =
     const [attractions, setAttractions] = useState(splitDays);
     const [draggedItem, setDraggedItem] = useState(null);
 
+    console.log(attractions)
     const handleDragStart = (e, index, dayIndex) => {
         const data = { attractionIndex: index, dayIndex: dayIndex };
         setDraggedItem(data)
@@ -109,13 +116,13 @@ function Review( { attractionList = [], restaurantList = [], accommodationList =
             <div className="review-footer-actions">
                 <button 
                     className="btn-secondary" 
-                    onClick={() => navigate('transport')}
+                    onClick={() => routerNavigate('/journey/accommodation')}
                 >
                     Edit
                 </button>
                 <button 
                     className="btn-primary" 
-                    onClick={() => navigate('home')}
+                    onClick={() => routerNavigate('/')}
                 >
                     Create My Journey
                 </button>

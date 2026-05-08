@@ -3,6 +3,7 @@ import Navbar from '../components/Navbar'
 import HamburgerMenu from '../components/HamburgerMenu'
 import AttractionCard from '../components/AttractionCard'
 import './ChooseAttractions.css'
+import { useNavigate, useLocation, useOutletContext } from 'react-router-dom'
 
 // ── Placeholder attractions for Tokyo ──
 const TOKYO_ATTRACTIONS = [
@@ -104,12 +105,13 @@ const TOKYO_ATTRACTIONS = [
   },
 ]
 
-export default function ChooseAttractions({ navigate, user, login, logout, tripData, restaurantList = [], accommodationList = [], transportList = [] }) {
+export default function ChooseAttractions() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [selected, setSelected] = useState(new Set())
+  const routerNavigate = useNavigate()
 
-  // tripData would come from the previous step; fallback to Tokyo placeholder
-  const trip = tripData || { location: 'Tokyo, Japan', nights: 2, people: 2 }
+  const [tripDetails, setTripDetails] = useOutletContext();
+  console.log(tripDetails)
 
   const toggleSelect = (id) => {
     setSelected(prev => {
@@ -125,24 +127,23 @@ export default function ChooseAttractions({ navigate, user, login, logout, tripD
       return
     }
     const chosenAttractions = TOKYO_ATTRACTIONS.filter(a => selected.has(a.id))
-    // TODO: pass chosenAttractions to the next page / itinerary generator
-    navigate('review', { attractionList: chosenAttractions, restaurantList, accommodationList, transportList, trip: trip })
+    setTripDetails((prev) => ({
+    ...prev,
+    attractions: chosenAttractions
+    }));
+    routerNavigate('/journey/restaurants')
   }
 
   const handleSkip = () => {
-    // TODO: navigate to itinerary without attractions
-    navigate('review', { attractionList: [], restaurantList, accommodationList, transportList, trip: trip })
+    setTripDetails((prev) => ({
+    ...prev,
+    attractions: []
+    }));
+    routerNavigate('/journey/restaurants')
   }
 
   return (
     <div className="ca-page">
-      <Navbar
-        user={user}
-        onLogin={login}
-        onLogout={logout}
-        onMenuClick={() => setMenuOpen(true)}
-        onNavigate={navigate}
-      />
 
       <HamburgerMenu
         isOpen={menuOpen}
@@ -154,7 +155,7 @@ export default function ChooseAttractions({ navigate, user, login, logout, tripD
       {/* Page header */}
       <div className="ca-header">
         <span className="ca-eyebrow">
-          {trip.location} · {trip.nights} nights · {trip.people} {trip.people === 1 ? 'person' : 'people'}
+          {tripDetails.location} · {tripDetails.nights} nights · {tripDetails.people} {tripDetails.people === 1 ? 'person' : 'people'}
         </span>
       <div className="ca-title-row">
         <h1 className="ca-title">Choose Attractions</h1>

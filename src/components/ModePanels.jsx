@@ -20,19 +20,17 @@ export default function ModePanels({ onSelect }) {
           </ul>
           <div className="mode-panel-cta">Get Started →</div>
         </div>
-
-        <div className="mode-panel" onClick={() => onSelect('manual')}>
-          <div className="mode-panel-icon">🗺️</div>
-          <h3 className="mode-panel-title">Manual</h3>
-          <p className="mode-panel-sub">Build every detail yourself</p>
-          <ul className="mode-features">
-            {MANUAL_FEATURES.map(f => (
-              <li key={f}><span className="feature-dot">•</span>{f}</li>
-            ))}
-          </ul>
-          <div className="mode-panel-cta">Start Planning →</div>
-        </div>
-
+          <div className="mode-panel" onClick={() => onSelect('manual')}>
+            <div className="mode-panel-icon">🗺️</div>
+            <h3 className="mode-panel-title">Manual</h3>
+            <p className="mode-panel-sub">Build every detail yourself</p>
+            <ul className="mode-features">
+              {MANUAL_FEATURES.map(f => (
+                <li key={f}><span className="feature-dot">•</span>{f}</li>
+              ))}
+            </ul>
+            <div className="mode-panel-cta">Start Planning →</div>
+          </div>
       </div>
     </div>
   )

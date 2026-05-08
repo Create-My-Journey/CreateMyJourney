@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import AttractionCard from '../components/AttractionCard'
 import './Restaurants.css'
+import { useNavigate, useLocation, useOutletContext } from 'react-router-dom'
 
 // IDs start at 101 to avoid collision with attraction IDs (1–8)
 const TOKYO_RESTAURANTS = [
@@ -156,8 +157,12 @@ function Restaurants({ navigate, tripData, transportList = [], accommodationList
   const [minBudget, setMinBudget] = useState('')
   const [maxBudget, setMaxBudget] = useState('')
   const [minReviewScore, setMinReviewScore] = useState('')
+  
+  const routerNavigate = useNavigate()
+  const [tripDetails, setTripDetails] = useOutletContext();
+  console.log(location.state)
 
-  const trip = tripData || { location: 'Tokyo, Japan', nights: 2, people: 2 }
+  const trip = tripDetails
 
   const toggleSelect = (id) => {
     setSelected(prev => {
@@ -168,12 +173,20 @@ function Restaurants({ navigate, tripData, transportList = [], accommodationList
   }
 
   const handleSkip = () => {
-    navigate?.('attractions', { restaurantList: [], accommodationList, transportList, trip })
+    setTripDetails((prev) => ({
+    ...prev,
+    restaurants: []
+    }));
+    routerNavigate('/journey/transport')
   }
 
   const handleConfirm = () => {
     const chosenRestaurants = TOKYO_RESTAURANTS.filter(r => selected.has(r.id))
-    navigate?.('attractions', { restaurantList: chosenRestaurants, accommodationList, transportList, trip })
+    setTripDetails((prev) => ({
+    ...prev,
+    restaurants: chosenRestaurants
+    }));
+    routerNavigate('/journey/transport')
   }
 
   return (
