@@ -69,6 +69,10 @@ h1 {
     padding: calc(var(--spacing) / 2);
 }
 
+:hover.attraction-card {
+  border: 2px solid saddlebrown;
+}
+
 li {
   list-style: none;
   padding: 10px;

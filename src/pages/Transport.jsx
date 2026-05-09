@@ -120,9 +120,11 @@ export default function Transport() {
 	}
 
 	const handleSkip = () => {
-		setTripDetails((prev) => ({
-		...prev,
-		}));
+		setTripDetails((prev) => {
+			// remove transport in case we dont want it
+			const { transport, ...rest } = prev;
+			return rest;
+		});
 		routerNavigate('/journey/review')
 	}
 
@@ -209,8 +211,6 @@ export default function Transport() {
 						{activeSegment.options.map((option) => {
 							const inputId = `${activeSegment.id}-${option.id}`
 							const isSelected = selectedBySegment[activeSegment.id] === option.id;
-							// console.log(selectedBySegment)
-							// console.log(option.id)
 							
 							return (
 								<label 

@@ -39,7 +39,6 @@ export default function Home({ user, login, logout }) {
   }
 
   const handleFormChange = () => {
-    console.log("change")
     // If form changes after panels appear, hide panels
     // TODO: fix this because it doesnt work
     if (showPanels) setShowPanels(false)
@@ -47,7 +46,7 @@ export default function Home({ user, login, logout }) {
 
   const handleModeSelect = (mode) => {
     if (mode === 'manual') {
-      routerNavigate('journey', {state: formData})
+      routerNavigate('journey', {state: {...formData, tripId: Date.now()}})
       return
     }
 
