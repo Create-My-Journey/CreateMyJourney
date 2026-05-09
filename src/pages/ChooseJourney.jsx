@@ -8,16 +8,16 @@ export default function ChooseJourney() {
     const location = useLocation()
 
     const [tripData, setTripData] = useState(() => {
-    const saved = sessionStorage.getItem("active_trip");
-    const saved_parse = saved ? JSON.parse(saved) : null;
+        const saved = sessionStorage.getItem("active_trip");
+        const saved_parse = saved ? JSON.parse(saved) : null;
 
-    if (saved_parse && location.state != null && location.state.tripId !== saved_parse.tripId) {
-        return location.state;
-    }
+        if (saved_parse && location.state != null && location.state.tripId !== saved_parse.tripId) {
+            return location.state;
+        }
 
-    if (saved_parse) {
-        return saved_parse;
-    }
+        if (saved_parse) {
+            return saved_parse;
+        }
 
     return location.state || {};
     });

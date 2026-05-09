@@ -1,98 +1,21 @@
-import { useEffect, useState } from 'react'
-import Navbar from '../components/Navbar'
+import { useState } from 'react'
 import HamburgerMenu from '../components/HamburgerMenu'
 import AccommodationCard from '../components/AccommodationCard'
+import { usePlacesSearch } from '../hooks/usePlacesSearch'
 import './ChooseAccommodation.css'
-import { Link, useNavigate } from 'react-router-dom'
-import { useContext } from 'react'
-import { useOutletContext } from 'react-router-dom'
-
-// ── Placeholder accommodations for Tokyo ──
-const TOKYO_ACCOMMODATIONS = [
-  {
-    id: 1,
-    name: 'Park Hyatt Tokyo',
-    type: 'Luxury Hotel',
-    pricePerNight: '$420',
-    rating: 4.9,
-    amenities: ['Pool', 'Spa', 'Gym', 'Restaurant', 'Bar', 'Room Service'],
-    location: 'Shinjuku, Tokyo',
-    description:
-      'Occupying the top floors of the Shinjuku Park Tower, the Park Hyatt offers sweeping views of Mount Fuji and the Tokyo skyline. Made famous by Lost in Translation, this iconic hotel blends understated luxury with exceptional Japanese service. The New York Bar on the 52nd floor is a must-visit.',
-    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=440&q=80',
-  },
-  {
-    id: 2,
-    name: 'Trunk Hotel',
-    type: 'Boutique Hotel',
-    pricePerNight: '$280',
-    rating: 4.7,
-    amenities: ['Rooftop Bar', 'Restaurant', 'Gym', 'Bicycle Rental'],
-    location: 'Shibuya, Tokyo',
-    description:
-      'A stylish boutique hotel in the heart of Shibuya, Trunk blends local culture with contemporary design. Each room features curated art pieces and handcrafted furniture by Japanese artisans. The rooftop terrace and socially conscious ethos make it a favourite among design-minded travellers.',
-    image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=440&q=80',
-  },
-  {
-    id: 3,
-    name: 'Asakusa Ryokan Yagenbori',
-    type: 'Traditional Ryokan',
-    pricePerNight: '$185',
-    rating: 4.8,
-    amenities: ['Onsen', 'Kaiseki Dinner', 'Yukata', 'Tea Ceremony', 'Garden'],
-    location: 'Asakusa, Tokyo',
-    description:
-      'Experience authentic Japanese hospitality at this intimate ryokan steps from Senso-ji Temple. Sleep on futons in tatami-floored rooms, soak in a private cypress-wood onsen bath, and wake to a traditional multi-course breakfast. An unmissable cultural experience in the heart of old Tokyo.',
-    image: 'https://images.unsplash.com/photo-1578469645742-46cae010e5d4?w=440&q=80',
-  },
-  {
-    id: 4,
-    name: 'Citadines Shinjuku Tokyo',
-    type: 'Serviced Apartment',
-    pricePerNight: '$130',
-    rating: 4.5,
-    amenities: ['Kitchenette', 'Laundry', 'Gym', 'Lounge', 'Workspace'],
-    location: 'Shinjuku, Tokyo',
-    description:
-      'Ideal for longer stays, these spacious serviced apartments in Shinjuku come with fully equipped kitchenettes and separate living areas. Located a short walk from Shinjuku Station, you\'re well connected to every corner of the city. Modern, practical, and great value for groups or families.',
-    image: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=440&q=80',
-  },
-  {
-    id: 5,
-    name: 'Khaosan Tokyo Origami',
-    type: 'Hostel',
-    pricePerNight: '$38',
-    rating: 4.4,
-    amenities: ['Shared Kitchen', 'Lounge', 'Luggage Storage', 'Free WiFi', 'Tours Desk'],
-    location: 'Asakusa, Tokyo',
-    description:
-      'A social and well-located hostel in Asakusa offering both dorm beds and private rooms. Clean, well-designed spaces with a lively common area where travellers swap tips over breakfast. Perfect for solo travellers or budget-conscious visitors who still want style and character.',
-    image: 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=440&q=80',
-  },
-  {
-    id: 6,
-    name: 'The Tokyo EDITION Toranomon',
-    type: 'Design Hotel',
-    pricePerNight: '$350',
-    rating: 4.8,
-    amenities: ['Rooftop Pool', 'Spa', 'Michelin Bar', 'Gym', 'Concierge'],
-    location: 'Toranomon, Tokyo',
-    description:
-      'Designed by Ian Schrager in collaboration with Kengo Kuma, the EDITION Toranomon is a masterpiece of understated luxury. Floor-to-ceiling windows frame panoramic city views, while the rooftop pool and Michelin-recognised bar set the scene for unforgettable evenings. Modern Tokyo at its finest.',
-    image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=440&q=80',
-  },
-]
+import { useNavigate, useOutletContext } from 'react-router-dom'
 
 export default function ChooseAccommodation() {
   const [menuOpen, setMenuOpen] = useState(false)
   const routerNavigate = useNavigate()
-  const [tripDetails, setTripDetails] = useOutletContext();
+  const [tripDetails, setTripDetails] = useOutletContext()
 
-  // use the previous selected value if we have one
   const [selected, setSelected] = useState(
-    () => tripDetails.accommodation == null ? null : tripDetails.accommodation[0].id
-  );
-  const trip = tripDetails;
+    () => tripDetails.accommodation == null ? null : tripDetails.accommodation[0]?.id ?? null
+  )
+
+  // ── Real data from Google Places ──
+  const { places, loading, error } = usePlacesSearch(tripDetails.location, 'lodging', 10)
 
   const handleSelect = (id) => {
     setSelected(prev => prev === id ? null : id)
@@ -103,36 +26,31 @@ export default function ChooseAccommodation() {
       alert('Please select an accommodation, or use "Skip".')
       return
     }
-    const chosenAccommodation = TOKYO_ACCOMMODATIONS.find(a => a.id === selected)
+    const chosenAccommodation = places.find(a => a.id === selected)
+
+    // Normalise into the shape the rest of the app (Review page) expects
     const accommodationCardItem = {
-      id: selected,
+      id: chosenAccommodation.id,
       name: chosenAccommodation.name,
-      category: chosenAccommodation.type,
+      category: chosenAccommodation.type ?? 'Hotel',
       hours: chosenAccommodation.location,
-      price: chosenAccommodation.pricePerNight,
+      price: chosenAccommodation.pricePerNight ?? 'See website',
       rating: chosenAccommodation.rating,
-      tags: chosenAccommodation.amenities,
+      tags: chosenAccommodation.amenities ?? [],
       description: chosenAccommodation.description,
       image: chosenAccommodation.image,
     }
 
-    setTripDetails((prev) => ({
-    ...prev,
-    accommodation: [accommodationCardItem]
-    }));
+    setTripDetails(prev => ({ ...prev, accommodation: [accommodationCardItem] }))
     routerNavigate('/journey/attractions')
   }
 
   const handleSkip = () => {
-    setTripDetails((prev) => ({
-    ...prev,
-    }));
     routerNavigate('/journey/attractions')
   }
 
   return (
     <div className="ch-page">
-
       <HamburgerMenu
         isOpen={menuOpen}
         onClose={() => setMenuOpen(false)}
@@ -140,10 +58,10 @@ export default function ChooseAccommodation() {
         onJourneyClick={() => {}}
       />
 
-      {/* Page header */}
       <div className="ch-header">
         <span className="ch-eyebrow">
-          {trip.location} · {trip.nights} nights · {trip.people} {trip.people === 1 ? 'person' : 'people'}
+          {tripDetails.location} · {tripDetails.nights} nights · {tripDetails.people}{' '}
+          {tripDetails.people === 1 ? 'person' : 'people'}
         </span>
         <div className="ch-title-row">
           <h1 className="ch-title">Choose Accommodation</h1>
@@ -157,19 +75,37 @@ export default function ChooseAccommodation() {
         </p>
       </div>
 
-      {/* Accommodation list */}
       <main className="ch-main">
-        {TOKYO_ACCOMMODATIONS.map(accommodation => (
+        {loading && (
+          <div className="places-status">
+            <div className="places-spinner" />
+            <p>Finding accommodation in {tripDetails.location}…</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="places-error">
+            <p>⚠️ Couldn't load accommodation: {error}</p>
+            <p className="places-error-sub">Check that the proxy server is running and your API key is set.</p>
+          </div>
+        )}
+
+        {!loading && !error && places.length === 0 && (
+          <div className="places-status">
+            <p>No accommodation found for "{tripDetails.location}".</p>
+          </div>
+        )}
+
+        {places.map(accommodation => (
           <AccommodationCard
             key={accommodation.id}
-            accommodation={{ ...accommodation, nights: trip.nights }}
+            accommodation={{ ...accommodation, nights: tripDetails.nights }}
             selected={selected === accommodation.id}
             onSelect={handleSelect}
           />
         ))}
       </main>
 
-      {/* Sticky footer actions */}
       <div className="ch-footer">
         <button className="btn btn-ghost" onClick={handleSkip}>
           Skip
