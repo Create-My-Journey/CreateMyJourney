@@ -7,21 +7,19 @@ import './ChooseJourney.css'
 export default function ChooseJourney() {
     const location = useLocation()
 
-    // initialize either from storage or from the location state
     const [tripData, setTripData] = useState(() => {
-        const saved = sessionStorage.getItem("active_trip");
-        const saved_parse = saved ? JSON.parse(saved) : null
+    const saved = sessionStorage.getItem("active_trip");
+    const saved_parse = saved ? JSON.parse(saved) : null;
 
-        if (location.state != null && location.state.tripId != saved_parse.tripId) {
-            return location.state;
-        }
+    if (saved_parse && location.state != null && location.state.tripId !== saved_parse.tripId) {
+        return location.state;
+    }
 
-        // if we refresh and location state is null, simpl return the saved data
-        if (saved) {
-            return saved_parse;
-        }
+    if (saved_parse) {
+        return saved_parse;
+    }
 
-        return location.state || {};
+    return location.state || {};
     });
 
     // store the data in session storage each time tripData is changed
