@@ -152,7 +152,6 @@ const TOKYO_RESTAURANTS = [
 ]
 
 function Restaurants({ navigate, tripData, transportList = [], accommodationList = [] }) {
-  const [selected, setSelected] = useState(new Set())
   const [sortBy, setSortBy] = useState('Reviews')
   const [minBudget, setMinBudget] = useState('')
   const [maxBudget, setMaxBudget] = useState('')
@@ -160,7 +159,10 @@ function Restaurants({ navigate, tripData, transportList = [], accommodationList
   
   const routerNavigate = useNavigate()
   const [tripDetails, setTripDetails] = useOutletContext();
-  console.log(location.state)
+  const [selected, setSelected] = useState(
+    () => tripDetails.restaurants == null ? 
+    new Set() : tripDetails.restaurants.reduce((acc, element) => acc.add(element.id), new Set())
+  );
 
   const trip = tripDetails
 
@@ -175,7 +177,6 @@ function Restaurants({ navigate, tripData, transportList = [], accommodationList
   const handleSkip = () => {
     setTripDetails((prev) => ({
     ...prev,
-    restaurants: []
     }));
     routerNavigate('/journey/transport')
   }

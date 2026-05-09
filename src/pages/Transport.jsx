@@ -77,15 +77,16 @@ export default function Transport() {
 
 	const routerNavigate = useNavigate()
 	const [tripDetails, setTripDetails] = useOutletContext();
+	// console.log(tripDetails)
 
-	const initialSelection = useMemo(
-		() =>
-			SEGMENTS.reduce((acc, segment) => {
-				acc[segment.id] = segment.options[0]?.id ?? ''
-				return acc
-			}, {}),
-		[],
-	)
+	let initialIndex = 0
+	const initialSelection = SEGMENTS.reduce((acc, segment, index) => {
+		acc[segment.id] = (tripDetails.transport == null ? segment.options[0].id : tripDetails.transport[index].option_id)
+		return acc
+	}, {});
+
+	console.log(initialSelection)
+
 
 	const [selectedBySegment, setSelectedBySegment] = useState(initialSelection)
 	const [activeSegmentIndex, setActiveSegmentIndex] = useState(0)
@@ -132,8 +133,10 @@ export default function Transport() {
 			const chosenOption = segment.options.find((option) => option.id === selectedBySegment[segment.id])
 			if (!chosenOption) return null
 
+			// also store the option id
 			return {
-				id: `transport-${segment.id}`,
+				id: `${segment.id}`,
+				option_id: chosenOption.id,
 				name: chosenOption.label,
 				category: 'Transport',
 				hours: segment.title,
@@ -207,6 +210,8 @@ export default function Transport() {
 						{activeSegment.options.map((option) => {
 							const inputId = `${activeSegment.id}-${option.id}`
 							const isSelected = selectedBySegment[activeSegment.id] === option.id;
+							// console.log(selectedBySegment)
+							// console.log(option.id)
 							
 							return (
 								<label 

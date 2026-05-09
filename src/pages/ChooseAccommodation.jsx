@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Navbar from '../components/Navbar'
 import HamburgerMenu from '../components/HamburgerMenu'
 import AccommodationCard from '../components/AccommodationCard'
@@ -85,11 +85,14 @@ const TOKYO_ACCOMMODATIONS = [
 
 export default function ChooseAccommodation() {
   const [menuOpen, setMenuOpen] = useState(false)
-  const [selected, setSelected] = useState(null)
   const routerNavigate = useNavigate()
-  
   const [tripDetails, setTripDetails] = useOutletContext();
-  const trip = tripDetails
+
+  // use the previous selected value if we have one
+  const [selected, setSelected] = useState(
+    () => tripDetails.accommodation == null ? null : tripDetails.accommodation[0].id
+  );
+  const trip = tripDetails;
 
   const handleSelect = (id) => {
     setSelected(prev => prev === id ? null : id)
@@ -102,7 +105,7 @@ export default function ChooseAccommodation() {
     }
     const chosenAccommodation = TOKYO_ACCOMMODATIONS.find(a => a.id === selected)
     const accommodationCardItem = {
-      id: `accommodation-${chosenAccommodation.id}`,
+      id: selected,
       name: chosenAccommodation.name,
       category: chosenAccommodation.type,
       hours: chosenAccommodation.location,
@@ -123,7 +126,6 @@ export default function ChooseAccommodation() {
   const handleSkip = () => {
     setTripDetails((prev) => ({
     ...prev,
-    accommodation: []
     }));
     routerNavigate('/journey/attractions')
   }

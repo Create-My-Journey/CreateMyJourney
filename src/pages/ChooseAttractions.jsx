@@ -107,16 +107,18 @@ const TOKYO_ATTRACTIONS = [
 
 export default function ChooseAttractions() {
   const [menuOpen, setMenuOpen] = useState(false)
-  const [selected, setSelected] = useState(new Set())
   const routerNavigate = useNavigate()
 
   const [tripDetails, setTripDetails] = useOutletContext();
-  console.log(tripDetails)
+  const [selected, setSelected] = useState(
+    () => tripDetails.attractions == null ? 
+    new Set() : tripDetails.attractions.reduce((acc, element) => acc.add(element.id), new Set())
+  );
 
   const toggleSelect = (id) => {
     setSelected(prev => {
       const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
+      next.has(id) ? next.delete(id) : next.add(id) // if the id is not in the set, add it
       return next
     })
   }
@@ -137,7 +139,6 @@ export default function ChooseAttractions() {
   const handleSkip = () => {
     setTripDetails((prev) => ({
     ...prev,
-    attractions: []
     }));
     routerNavigate('/journey/restaurants')
   }
