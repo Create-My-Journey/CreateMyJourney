@@ -122,7 +122,6 @@ export default function Transport() {
 	const handleSkip = () => {
 		setTripDetails((prev) => ({
 		...prev,
-		transport: []
 		}));
 		routerNavigate('/journey/review')
 	}
