@@ -1,0 +1,75 @@
+.loc-autocomplete {
+  position: relative;
+  width: 100%;
+}
+
+/* ── Small spinner inside the input ── */
+.loc-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border);
+  border-top-color: var(--text);
+  border-radius: 50%;
+  animation: locSpin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes locSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Dropdown list ── */
+.loc-dropdown {
+  position: absolute;
+  top: calc(100% + 0.3rem);
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  z-index: 200;
+  overflow: hidden;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  animation: locFadeIn 0.12s ease;
+}
+
+@keyframes locFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Individual suggestion ── */
+.loc-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.88rem;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background var(--t);
+  color: var(--text);
+}
+
+.loc-item:last-child {
+  border-bottom: none;
+}
+
+.loc-item:hover,
+.loc-item.active {
+  background: var(--bg);
+}
+
+.loc-item-pin {
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.loc-item-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

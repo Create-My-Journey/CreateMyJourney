@@ -1,17 +1,3 @@
-/**
- * server/placesProxy.js
- *
- * Lightweight Express proxy so the Google Maps API key never
- * reaches the browser bundle.
- *
- * Start alongside Vite with:
- *   node server/placesProxy.js
- * or add a "dev:server" script and run both in parallel.
- *
- * Vite proxies  /api/places  →  http://localhost:3001/api/places
- * (configured in vite.config.js)
- */
-
 import 'dotenv/config'
 import express from 'express'
 import fetch from 'node-fetch'
@@ -27,10 +13,7 @@ if (!API_KEY) {
 
 const PLACES_BASE = 'https://maps.googleapis.com/maps/api/place'
 
-/* ── Text-search → Nearby search pipeline ──────────────────────────────
-   1. Geocode the location string to lat/lng
-   2. Nearby search for the requested type                              */
-
+// ── Text search (used by attractions, accommodation, restaurants) ──
 async function textSearch(location, type, limit) {
   const query = `${type.replace(/_/g, ' ')} in ${location}`
   const url = `${PLACES_BASE}/textsearch/json?query=${encodeURIComponent(query)}&key=${API_KEY}`
@@ -42,6 +25,7 @@ async function textSearch(location, type, limit) {
   return (data.results ?? []).slice(0, limit)
 }
 
+// GET /api/places/search?location=Tokyo,Japan&type=tourist_attraction&limit=12
 app.get('/api/places/search', async (req, res) => {
   const { location, type, limit = '12' } = req.query
   if (!location || !type) return res.status(400).json({ error: 'location and type are required' })
@@ -55,25 +39,32 @@ app.get('/api/places/search', async (req, res) => {
   }
 })
 
-/* ── Routes ─────────────────────────────────────────────────────────── */
-
-// GET /api/places/search?location=Tokyo%2C+Japan&type=tourist_attraction&limit=12
-app.get('/api/places/search', async (req, res) => {
-  const { location, type, limit = '12' } = req.query
-  if (!location || !type) return res.status(400).json({ error: 'location and type are required' })
+// GET /api/places/autocomplete?input=toky
+app.get('/api/places/autocomplete', async (req, res) => {
+  const { input } = req.query
+  if (!input || input.trim().length < 2) return res.json({ predictions: [] })
 
   try {
-    const { lat, lng } = await geocode(location)
-    const results      = await nearbySearch(lat, lng, type, parseInt(limit, 10))
-    res.json({ results })
+    const url = `${PLACES_BASE}/autocomplete/json?input=${encodeURIComponent(input)}&types=(cities)&key=${API_KEY}`
+    const r    = await fetch(url)
+    const data = await r.json()
+
+    if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
+      throw new Error(`Autocomplete API error: ${data.status} — ${data.error_message ?? ''}`)
+    }
+
+    const predictions = (data.predictions ?? []).slice(0, 6).map(p => ({
+      placeId:     p.place_id,
+      description: p.description,
+    }))
+    res.json({ predictions })
   } catch (err) {
-    console.error('/api/places/search error:', err.message)
+    console.error('/api/places/autocomplete error:', err.message)
     res.status(500).json({ error: err.message })
   }
 })
 
 // GET /api/places/photo?ref=<photo_reference>&maxWidth=440
-// Proxies the photo so the API key stays server-side
 app.get('/api/places/photo', async (req, res) => {
   const { ref, maxWidth = '440' } = req.query
   if (!ref) return res.status(400).json({ error: 'ref is required' })
@@ -84,7 +75,7 @@ app.get('/api/places/photo', async (req, res) => {
     if (!photoRes.ok) return res.status(photoRes.status).send('Photo fetch failed')
 
     res.set('Content-Type', photoRes.headers.get('content-type') ?? 'image/jpeg')
-    res.set('Cache-Control', 'public, max-age=86400') // cache for 1 day
+    res.set('Cache-Control', 'public, max-age=86400')
     photoRes.body.pipe(res)
   } catch (err) {
     console.error('/api/places/photo error:', err.message)

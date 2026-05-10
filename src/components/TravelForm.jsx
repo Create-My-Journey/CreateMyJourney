@@ -1,43 +1,14 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import DatePicker from './DatePicker'
+import LocationAutocomplete from './LocationAutocomplete'
 import './TravelForm.css'
-
-// ── Location autocomplete data ──
-const CITIES = [
-  'Bucharest, Romania', 'Cluj-Napoca, Romania', 'Constanța, Romania',
-  'Timișoara, Romania', 'Iași, Romania', 'Brașov, Romania', 'Sinaia, Romania',
-  'Sibiu, Romania', 'Oradea, Romania', 'Arad, Romania', 'Craiova, Romania',
-  'Galați, Romania', 'Mamaia, Romania', 'Predeal, Romania', 'Poiana Brasov, Romania',
-  'Paris, France', 'Lyon, France', 'Nice, France', 'Marseille, France',
-  'Rome, Italy', 'Milan, Italy', 'Florence, Italy', 'Venice, Italy', 'Naples, Italy',
-  'Barcelona, Spain', 'Madrid, Spain', 'Seville, Spain', 'Valencia, Spain',
-  'Amsterdam, Netherlands', 'Rotterdam, Netherlands', 'The Hague, Netherlands',
-  'Vienna, Austria', 'Salzburg, Austria', 'Innsbruck, Austria',
-  'Prague, Czech Republic', 'Budapest, Hungary',
-  'Berlin, Germany', 'Munich, Germany', 'Hamburg, Germany', 'Cologne, Germany',
-  'London, UK', 'Edinburgh, UK', 'Manchester, UK',
-  'Lisbon, Portugal', 'Porto, Portugal',
-  'Athens, Greece', 'Santorini, Greece', 'Mykonos, Greece', 'Thessaloniki, Greece',
-  'Istanbul, Turkey', 'Antalya, Turkey', 'Cappadocia, Turkey',
-  'Dubrovnik, Croatia', 'Split, Croatia', 'Zagreb, Croatia',
-  'Warsaw, Poland', 'Krakow, Poland', 'Gdansk, Poland',
-  'Sofia, Bulgaria', 'Varna, Bulgaria', 'Plovdiv, Bulgaria',
-  'Brussels, Belgium', 'Ghent, Belgium', 'Bruges, Belgium',
-  'Zurich, Switzerland', 'Geneva, Switzerland', 'Bern, Switzerland',
-  'Stockholm, Sweden', 'Gothenburg, Sweden', 'Malmo, Sweden',
-  'Copenhagen, Denmark', 'Oslo, Norway', 'Helsinki, Finland',
-  'Reykjavik, Iceland', 'Dublin, Ireland', 'Tokyo, Japan',
-]
 
 const today = new Date()
 
 export default function TravelForm({ onComplete }) {
-  // Location
+  // Location — we store both the display text and the placeId from Google
   const [location,     setLocation]     = useState('')
-  const [suggestions,  setSuggestions]  = useState([])
-  const [locationValid, setLocationValid] = useState(false)
   const [locationErr,  setLocationErr]  = useState('')
-  const locRef = useRef(null)
 
   // Date
   const [date,        setDate]        = useState(null)
@@ -54,36 +25,17 @@ export default function TravelForm({ onComplete }) {
   const [people,    setPeople]    = useState('')
   const [peopleErr, setPeopleErr] = useState('')
 
-  // Close location suggestions on outside click
-  useEffect(() => {
-    const handler = (e) => {
-      if (locRef.current && !locRef.current.contains(e.target)) {
-        setSuggestions([])
-        if (!locationValid && location) setLocationErr('We cannot find this location')
-      }
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [location, locationValid])
-
   // ── Handlers ──
+
+  // Called on every keystroke — user is still typing
   const handleLocationChange = (val) => {
     setLocation(val)
-    setLocationValid(false)
     setLocationErr('')
-    if (val.trim().length > 0) {
-      const matches = CITIES.filter(c => c.toLowerCase().includes(val.toLowerCase()))
-      setSuggestions(matches.slice(0, 6))
-      if (matches.length === 0) setLocationErr('We cannot find this location')
-    } else {
-      setSuggestions([])
-    }
   }
 
-  const handleLocationSelect = (city) => {
-    setLocation(city)
-    setLocationValid(true)
-    setSuggestions([])
+  // Called when user picks a suggestion — description is the full text, placeId for future use
+  const handleLocationSelect = (description, _placeId) => {
+    setLocation(description)
     setLocationErr('')
   }
 
@@ -120,8 +72,6 @@ export default function TravelForm({ onComplete }) {
     // TODO: uncomment this to enable validation again
     // if (!location) {
     //   setLocationErr('Location is required'); valid = false
-    // } else if (!locationValid) {
-    //   setLocationErr('We cannot find this location'); valid = false
     // }
 
     // if (!date) { setDateErr('Start date is required'); valid = false }
@@ -154,29 +104,15 @@ export default function TravelForm({ onComplete }) {
       <div className="form-fields-row">
 
         {/* ── Location ── */}
-        <div className="form-field" ref={locRef}>
+        <div className="form-field">
           <label className="field-label">Location</label>
-          {locationErr && <p className="error-text">{locationErr}</p>}
-          <div className={`input-wrapper ${locationErr ? 'has-error' : ''}`}>
-            <span className="input-icon">📍</span>
-            <input
-              className="form-input"
-              placeholder="Where to?"
-              value={location}
-              onChange={e => handleLocationChange(e.target.value)}
-              autoComplete="off"
-            />
-            <span className="input-icon" style={{ color: 'var(--text-light)', fontSize: '0.9rem' }}>⌕</span>
-          </div>
-          {suggestions.length > 0 && (
-            <div className="suggestions-dropdown">
-              {suggestions.map(city => (
-                <div key={city} className="suggestion-item" onMouseDown={() => handleLocationSelect(city)}>
-                  <span className="suggestion-pin">📍</span> {city}
-                </div>
-              ))}
-            </div>
-          )}
+          <LocationAutocomplete
+            value={location}
+            onChange={handleLocationChange}
+            onSelect={handleLocationSelect}
+            error={locationErr}
+            placeholder="Where to?"
+          />
         </div>
 
         {/* ── Date ── */}

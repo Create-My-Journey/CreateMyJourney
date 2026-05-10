@@ -23,6 +23,21 @@ export async function searchPlaces(location, type, limit = 12) {
 }
 
 /**
+ * Autocomplete a location string using Google Places Autocomplete.
+ * Returns up to 6 city suggestions.
+ * @param {string} input - partial location text typed by user
+ * @returns {Promise<Array<{ placeId: string, description: string }>>}
+ */
+export async function autocompleteLocation(input) {
+  if (!input || input.trim().length < 2) return []
+  const params = new URLSearchParams({ input: input.trim() })
+  const res = await fetch(`${BASE}/autocomplete?${params}`)
+  if (!res.ok) throw new Error(`Autocomplete failed: ${res.status}`)
+  const data = await res.json()
+  return data.predictions ?? []
+}
+
+/**
  * Fetch the best available photo URL for a place.
  * @param {string} photoReference - from place.photos[0].photo_reference
  * @param {number} maxWidth
