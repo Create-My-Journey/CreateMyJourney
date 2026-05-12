@@ -1,22 +1,11 @@
-import { createContext, useState } from 'react'
+import { createContext, useEffect, useState } from 'react'
 import Navbar         from '../components/Navbar'
 import HamburgerMenu  from '../components/HamburgerMenu'
 import TravelForm     from '../components/TravelForm'
 import ModePanels     from '../components/ModePanels'
 import './Home.css'
 import { useNavigate } from 'react-router-dom'
-
-// ── Mock journeys (replace with real API / localStorage later) ──
-const MOCK_JOURNEYS = [
-  { id: 1, location: "Tokyo, Japan",   startDate: "2026-05-15", nights: 3, people: 2},
-  { id: 2, location: 'Constanța, Romania',  startDate: '2026-04-02', nights: 3, people: 2 },
-  { id: 3, location: 'Sinaia, Romania',      startDate: '2026-03-15', nights: 5, people: 4 },
-  { id: 4, location: 'Paris, France',        startDate: '2026-02-10', nights: 7, people: 2 },
-  { id: 5, location: 'Budapest, Hungary',    startDate: '2025-12-20', nights: 4, people: 2 },
-  { id: 6, location: 'Brașov, Romania',      startDate: '2025-11-05', nights: 3, people: 3 },
-  { id: 7, location: 'Vienna, Austria',      startDate: '2025-09-12', nights: 6, people: 2 },
-  { id: 8, location: 'Rome, Italy',          startDate: '2025-07-20', nights: 8, people: 2 },
-]
+import { getItinerariesByUser } from '../services/databaseApi'
 
 export const TravelContext = createContext({location: "", date: "", night: 0, people: 0});
 
@@ -25,8 +14,56 @@ export default function Home({ user, login, logout }) {
   const [menuOpen,   setMenuOpen]   = useState(false)
   const [showPanels, setShowPanels] = useState(false)
   const [formData,   setFormData]   = useState(null)
+  const [journeys, setJourneys] = useState([])
 
-  const journeys = user ? MOCK_JOURNEYS : []
+  useEffect(() => {
+    if (!user) {
+      setJourneys([])
+      return
+    }
+
+    let isActive = true
+
+    const loadJourneys = async () => {
+      try {
+        const itineraries = await getItinerariesByUser(1)
+        if (!isActive) return
+
+        const mapped = itineraries.map((itinerary) => {
+          const start = itinerary.departure_date
+          const end = itinerary.return_date
+          const startDate = start ?? new Date().toISOString().slice(0, 10)
+
+          let nights = 1
+          if (start && end) {
+            const startMs = new Date(`${start}T00:00:00`).getTime()
+            const endMs = new Date(`${end}T00:00:00`).getTime()
+            const diffDays = Math.round((endMs - startMs) / (1000 * 60 * 60 * 24))
+            nights = Math.max(1, diffDays)
+          }
+
+          return {
+            id: itinerary.itinerary_id,
+            location: itinerary.destination,
+            startDate,
+            nights,
+            people: itinerary.group_size ?? 1,
+          }
+        })
+
+        setJourneys(mapped)
+      } catch (error) {
+        console.error('Failed to load journeys from database:', error)
+        if (isActive) setJourneys([])
+      }
+    }
+
+    loadJourneys()
+
+    return () => {
+      isActive = false
+    }
+  }, [user])
 
   const handleFormComplete = (data) => {
     // log the data
@@ -55,8 +92,16 @@ export default function Home({ user, login, logout }) {
   }
 
   const handleJourneyClick = (journey) => {
-    // TODO: navigate to review page
-    routerNavigate('journey/review')
+    // Navigate directly to journey review page with existing itinerary for editing
+    routerNavigate('journey/review', {
+      state: {
+        itinerary_id: journey.id,
+        location: journey.location,
+        date: new Date(journey.startDate),
+        nights: journey.nights,
+        people: journey.people,
+      },
+    })
   }
 
   return (
@@ -71,7 +116,7 @@ export default function Home({ user, login, logout }) {
       <HamburgerMenu
         isOpen={menuOpen}
         onClose={() => setMenuOpen(false)}
-        journeys={MOCK_JOURNEYS}
+        journeys={journeys}
         onJourneyClick={handleJourneyClick}
       />
 

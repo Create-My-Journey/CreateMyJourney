@@ -81,7 +81,9 @@ export default function Transport() {
 
 	let initialIndex = 0
 	const initialSelection = SEGMENTS.reduce((acc, segment, index) => {
-		acc[segment.id] = (tripDetails.transport == null ? segment.options[0].id : tripDetails.transport[index].option_id)
+		const restored = tripDetails.transport?.[index]?.option_id ?? tripDetails.transport?.[index]?.id
+		const existsInSegment = segment.options.some((option) => option.id === restored)
+		acc[segment.id] = existsInSegment ? restored : segment.options[0].id
 		return acc
 	}, {});
 

@@ -11,6 +11,11 @@ export default function ChooseJourney() {
         const saved = sessionStorage.getItem("active_trip");
         const saved_parse = saved ? JSON.parse(saved) : null;
 
+        // If location.state has itinerary_id, this is an edit flow; don't use saved session
+        if (location.state && location.state.itinerary_id) {
+            return location.state;
+        }
+
         if (saved_parse && location.state != null && location.state.tripId !== saved_parse.tripId) {
             return location.state;
         }
