@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import AttractionCard from '../components/AttractionCard'
 import { usePlacesSearch } from '../hooks/usePlacesSearch'
+import { buildDayActivityPlan } from '../services/itinerarySplit'
 import './Restaurants.css'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 
@@ -43,12 +44,23 @@ export default function Restaurants() {
   }
 
   const handleSkip = () => {
+    const dayActivityPlan = buildDayActivityPlan({
+      attractions: tripDetails.attractions || [],
+      restaurants: [],
+      nights: tripDetails.nights,
+    })
+    setTripDetails(prev => ({ ...prev, restaurants: [], dayActivityPlan }))
     routerNavigate('/journey/transport')
   }
 
   const handleConfirm = () => {
     const chosenRestaurants = places.filter(r => selected.has(r.id))
-    setTripDetails(prev => ({ ...prev, restaurants: chosenRestaurants }))
+    const dayActivityPlan = buildDayActivityPlan({
+      attractions: tripDetails.attractions || [],
+      restaurants: chosenRestaurants,
+      nights: tripDetails.nights,
+    })
+    setTripDetails(prev => ({ ...prev, restaurants: chosenRestaurants, dayActivityPlan }))
     routerNavigate('/journey/transport')
   }
 

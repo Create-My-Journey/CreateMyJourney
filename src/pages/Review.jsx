@@ -2,7 +2,28 @@ import { useState, useEffect } from 'react'
 import AttractionCard from '../components/AttractionCard'
 import './Review.css'
 import { useNavigate, useOutletContext, useLocation } from 'react-router-dom'
-import { createItinerary, updateItinerary, deleteItinerary, saveReviewSelections, toIsoDate, getAccommodations, getRestaurants, getAttractions, getTransport, deleteItineraryContent } from '../services/databaseApi'
+import { createItinerary, updateItinerary, deleteItinerary, saveReviewSelections, toIsoDate, getAccommodations, getRestaurants, getAttractions, getTransport, getItinerary, deleteItineraryContent } from '../services/databaseApi'
+import { buildDayActivityPlan, splitItemsEvenlyAcrossDays } from '../services/itinerarySplit'
+
+function nightsFromDateRange(departureDate, returnDate) {
+    if (!departureDate || !returnDate) return null;
+    const startMs = new Date(`${departureDate}T00:00:00`).getTime();
+    const endMs = new Date(`${returnDate}T00:00:00`).getTime();
+    if (Number.isNaN(startMs) || Number.isNaN(endMs)) return null;
+    const diffDays = Math.round((endMs - startMs) / (1000 * 60 * 60 * 24));
+    return Math.max(1, diffDays);
+}
+
+function toLocalIsoDate(value) {
+    if (!value) return null;
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
 
 function Day({dayIndex, attractions, onDragStart, onDragOver, onDrop}) {
     return (
@@ -177,23 +198,22 @@ function Review() {
     const restaurantList = tripDetails.restaurants || []
     const attractionList = tripDetails.attractions || []
 
-    // combine all selected items into one itinerary list and annotate their source type
-    const itineraryItems = [
-        ...transportList.map(item => ({ ...item, itemType: 'Transport' })),
-        ...accommodationList.map(item => ({ ...item, itemType: 'Accommodation' })),
-        ...restaurantList.map(item => ({ ...item, itemType: 'Restaurant' })),
-        ...attractionList.map(item => ({ ...item, itemType: 'Attraction' })),
-    ];
+    const activityDays = tripDetails.dayActivityPlan || buildDayActivityPlan({
+        attractions: attractionList,
+        restaurants: restaurantList,
+        nights: tripDetails.nights,
+    });
 
-    // split itinerary items between the days
-    const splitDays = [];
-    const nights = Math.max(1, tripDetails.nights || 1);
-    const itemsPerDay = Math.ceil(itineraryItems.length / nights);
-    for (let i = 0; i < nights; i++) {
-        const start = i * itemsPerDay;
-        const end = start + itemsPerDay;
-        splitDays.push(itineraryItems.slice(start, end));
-    }
+    const transportItems = transportList.map(item => ({ ...item, itemType: 'Transport' }));
+    const hasTransportDayIndex = transportItems.some((item) => Number.isInteger(item.dayIndex));
+    const transportByDay = hasTransportDayIndex
+        ? activityDays.map((_, dayIndex) => transportItems.filter((item) => item.dayIndex === dayIndex))
+        : splitItemsEvenlyAcrossDays(transportItems, tripDetails.nights);
+
+    const splitDays = activityDays.map((dayActivities, dayIndex) => ([
+        ...(transportByDay[dayIndex] || []),
+        ...dayActivities,
+    ]));
 
     const [attractions, setAttractions] = useState(splitDays);
     const [draggedItem, setDraggedItem] = useState(null);
@@ -201,7 +221,7 @@ function Review() {
     // Update attractions whenever tripDetails selections change (e.g., after loading existing itinerary)
     useEffect(() => {
         setAttractions(splitDays);
-    }, [JSON.stringify(itineraryItems)]);
+    }, [JSON.stringify(transportList), JSON.stringify(attractionList), JSON.stringify(restaurantList), tripDetails.nights]);
     const handleDragStart = (e, index, dayIndex) => {
         const data = { attractionIndex: index, dayIndex: dayIndex };
         setDraggedItem(data)
@@ -232,19 +252,40 @@ function Review() {
         setSaveError('');
 
         try {
-            const departureDate = toIsoDate(tripDetails.date) ?? new Date().toISOString().slice(0, 10);
+            const accommodationItems = accommodationList.map((item) => ({
+                ...item,
+                itemType: 'Accommodation',
+            }));
+            const daysToSave = accommodationItems.length > 0
+                ? (attractions.length > 0
+                    ? attractions.map((day, index) => (index === 0 ? [...accommodationItems, ...day] : day))
+                    : [accommodationItems])
+                : attractions;
+
+            const existingItinerary = tripDetails.itinerary_id
+                ? await getItinerary(tripDetails.itinerary_id)
+                : null;
+
+            const departureDate = toLocalIsoDate(tripDetails.date)
+                ?? toIsoDate(tripDetails.date)
+                ?? existingItinerary?.departure_date
+                ?? new Date().toISOString().slice(0, 10);
             const departureBase = new Date(`${departureDate}T00:00:00`);
-            const nights = Math.max(1, Number(tripDetails.nights) || 1);
+            const persistedNights = nightsFromDateRange(
+                existingItinerary?.departure_date,
+                existingItinerary?.return_date,
+            );
+            const nights = Math.max(1, Number(tripDetails.nights) || persistedNights || 1);
             const returnDateObj = new Date(departureBase);
             returnDateObj.setDate(returnDateObj.getDate() + nights);
-            const returnDate = toIsoDate(returnDateObj) ?? departureDate;
+            const returnDate = toLocalIsoDate(returnDateObj) ?? departureDate;
 
             const itineraryUpdate = {
                 destination: tripDetails.location ?? 'Unknown destination',
                 budget: null,
                 departure_date: departureDate,
                 return_date: returnDate,
-                group_size: Math.max(1, Number(tripDetails.people) || 1),
+                group_size: Math.max(1, Number(tripDetails.people) || Number(existingItinerary?.group_size) || 1),
             };
 
             let itineraryId = tripDetails.itinerary_id;
@@ -253,7 +294,7 @@ function Review() {
                 // Update existing itinerary: delete old selections, update metadata, then save new selections
                 await deleteItineraryContent(itineraryId);
                 await updateItinerary(itineraryId, itineraryUpdate);
-                await saveReviewSelections(itineraryId, attractions);
+                await saveReviewSelections(itineraryId, daysToSave);
             } else {
                 // Create new itinerary
                 const itinerary = await createItinerary({
@@ -266,7 +307,7 @@ function Review() {
                 }
 
                 itineraryId = itinerary.itinerary_id;
-                await saveReviewSelections(itineraryId, attractions);
+                await saveReviewSelections(itineraryId, daysToSave);
             }
 
             sessionStorage.setItem('last_saved_itinerary_id', String(itineraryId));
@@ -309,6 +350,26 @@ function Review() {
             
             {!isLoading && (
                 <>
+                    {accommodationList.length > 0 ? (
+                        <section className="accommodation-review-section">
+                            <h2>Accommodation</h2>
+                            <div className="accommodation-review-list">
+                                {accommodationList.map((accommodation, index) => (
+                                    <div key={accommodation.id || index}>
+                                        <span className="item-type-label item-type-accommodation">
+                                            Accommodation
+                                        </span>
+                                        <AttractionCard
+                                            attraction={accommodation}
+                                            selected={true}
+                                            onToggleSelect={() => {}}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    ) : null}
+
                     <div className="days-container">
                         { attractions.map((day, index) => (
                             <Day
