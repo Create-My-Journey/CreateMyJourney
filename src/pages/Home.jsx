@@ -17,7 +17,7 @@ export default function Home({ user, login, logout }) {
   const [journeys, setJourneys] = useState([])
 
   useEffect(() => {
-    if (!user) {
+    if (!user?.user_id) {
       setJourneys([])
       return
     }
@@ -26,7 +26,7 @@ export default function Home({ user, login, logout }) {
 
     const loadJourneys = async () => {
       try {
-        const itineraries = await getItinerariesByUser(1)
+        const itineraries = await getItinerariesByUser(user.user_id)
         if (!isActive) return
 
         const mapped = itineraries.map((itinerary) => {
@@ -104,6 +104,14 @@ export default function Home({ user, login, logout }) {
     })
   }
 
+  const handleNavigate = (target) => {
+    if (target === 'register') {
+      routerNavigate('/register')
+      return
+    }
+    routerNavigate('/')
+  }
+
   return (
     <div className="home-page">
       <Navbar
@@ -111,6 +119,7 @@ export default function Home({ user, login, logout }) {
         onLogin={login}
         onLogout={logout}
         onMenuClick={() => setMenuOpen(true)}
+        onNavigate={handleNavigate}
       />
 
       <HamburgerMenu

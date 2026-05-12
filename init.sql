@@ -25,13 +25,6 @@ CREATE TABLE users (
   updated_at TIMESTAMP DEFAULT NOW()
 );
 
--- Seed a temporary default user for the current no-auth flow.
-INSERT INTO users (user_id, email, password_hash)
-VALUES (1, 'demo@createmyjourney.local', 'temporary-demo-user')
-ON CONFLICT (user_id) DO NOTHING;
-
-SELECT setval('users_user_id_seq', GREATEST((SELECT MAX(user_id) FROM users), 1));
-
 -- ============================================
 -- Itineraries
 -- ============================================

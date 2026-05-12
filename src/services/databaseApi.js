@@ -14,9 +14,23 @@ const JSON_RETURN_HEADERS = {
 
 async function requestJson(url, options = {}, errorPrefix = 'Request failed') {
   const res = await fetch(url, options)
-  if (!res.ok) throw new Error(`${errorPrefix}: ${res.status}`)
-
   const text = await res.text()
+
+  if (!res.ok) {
+    let details = text
+    try {
+      const parsed = text ? JSON.parse(text) : null
+      if (parsed?.message) details = parsed.message
+      else if (parsed?.details) details = parsed.details
+      else if (parsed?.hint) details = parsed.hint
+    } catch {
+      // Keep raw response text when it is not JSON.
+    }
+
+    const suffix = details ? ` - ${details}` : ''
+    throw new Error(`${errorPrefix}: ${res.status}${suffix}`)
+  }
+
   return text ? JSON.parse(text) : []
 }
 
@@ -131,6 +145,18 @@ function toTransportRow(itineraryId, item, dayIndex, orderIndex) {
 
 export async function getUsers() {
   return requestJson(`${BASE}/users?order=user_id.asc`, {}, 'Failed to fetch users')
+}
+
+export async function getUserByEmail(email) {
+  const normalizedEmail = String(email ?? '').trim().toLowerCase()
+  if (!normalizedEmail) return null
+
+  const data = await requestJson(
+    `${BASE}/users?email=eq.${encodeURIComponent(normalizedEmail)}&limit=1`,
+    {},
+    'Failed to fetch user',
+  )
+  return data[0] ?? null
 }
 
 export async function createUser(user) {

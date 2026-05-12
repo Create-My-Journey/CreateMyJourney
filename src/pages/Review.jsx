@@ -55,6 +55,18 @@ function Review() {
     const [saveError, setSaveError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
+    const getCurrentUserId = () => {
+        try {
+            const rawUser = localStorage.getItem('cmj_user');
+            if (!rawUser) return null;
+            const parsed = JSON.parse(rawUser);
+            const id = Number(parsed?.user_id);
+            return Number.isInteger(id) && id > 0 ? id : null;
+        } catch {
+            return null;
+        }
+    };
+
     // When opening review directly from Home, hydrate context with the route state.
     useEffect(() => {
         if (!location.state?.itinerary_id) return;
@@ -210,6 +222,12 @@ function Review() {
     const handleCreateJourney = async () => {
         if (isSaving) return;
 
+        const userId = getCurrentUserId();
+        if (!userId) {
+            setSaveError('Please log in before saving a journey.');
+            return;
+        }
+
         setIsSaving(true);
         setSaveError('');
 
@@ -239,7 +257,7 @@ function Review() {
             } else {
                 // Create new itinerary
                 const itinerary = await createItinerary({
-                    user_id: 1,
+                    user_id: userId,
                     ...itineraryUpdate,
                 });
 

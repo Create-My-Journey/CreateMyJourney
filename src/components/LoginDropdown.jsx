@@ -1,10 +1,6 @@
 import { useState } from 'react'
-
-// ── Mock users (replace with real API later) ──
-const MOCK_USERS = [
-  { email: 'user@example.com', password: 'password', username: 'user' },
-  { email: 'test@test.com',    password: 'test',     username: 'test' },
-]
+import { getUserByEmail } from '../services/databaseApi'
+import { verifyPassword } from '../services/passwordAuth'
 
 export default function LoginDropdown({ onLogin, onNavigateRegister }) {
   const [email,    setEmail]    = useState('')
@@ -12,21 +8,31 @@ export default function LoginDropdown({ onLogin, onNavigateRegister }) {
   const [error,    setError]    = useState('')
   const [loading,  setLoading]  = useState(false)
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     setError('')
     if (!email || !password) { setError('Please fill in all fields.'); return }
 
     setLoading(true)
-    setTimeout(() => {                      // simulate async
-      const found = MOCK_USERS.find(u => u.email === email && u.password === password)
-      if (!found) {
+    try {
+      const normalizedEmail = email.trim().toLowerCase()
+      const found = await getUserByEmail(normalizedEmail)
+      const isValid = found ? await verifyPassword(password, found.password_hash) : false
+
+      if (!isValid) {
         setError('Invalid email or password.')
-        setLoading(false)
         return
       }
-      onLogin({ email: found.email, username: found.username })
+
+      onLogin({
+        user_id: found.user_id,
+        email: found.email,
+        username: found.email.split('@')[0],
+      })
+    } catch {
+      setError('Login failed. Please try again.')
+    } finally {
       setLoading(false)
-    }, 400)
+    }
   }
 
   return (

@@ -34,7 +34,7 @@ export default function Navbar({ user, onLogin, onLogout, onMenuClick, onNavigat
       </button>
 
       {/* Logo */}
-      <div className="navbar-logo" onClick={() => onNavigate('home')} title="Home">
+      <div className="navbar-logo" onClick={() => onNavigate?.('home')} title="Home">
         CMJ
       </div>
 
@@ -55,7 +55,7 @@ export default function Navbar({ user, onLogin, onLogout, onMenuClick, onNavigat
             {showLogin && (
               <LoginDropdown
                 onLogin={handleLogin}
-                onNavigateRegister={() => { onNavigate('register'); setShowLogin(false) }}
+                onNavigateRegister={() => { onNavigate?.('register'); setShowLogin(false) }}
               />
             )}
           </>
