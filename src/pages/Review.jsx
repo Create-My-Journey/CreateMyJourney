@@ -75,6 +75,7 @@ function Review() {
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const showTransportButton = !location.state?.fromTransport;
 
     const getCurrentUserId = () => {
         try {
@@ -210,18 +211,41 @@ function Review() {
         ? activityDays.map((_, dayIndex) => transportItems.filter((item) => item.dayIndex === dayIndex))
         : splitItemsEvenlyAcrossDays(transportItems, tripDetails.nights);
 
-    const splitDays = activityDays.map((dayActivities, dayIndex) => ([
-        ...(transportByDay[dayIndex] || []),
-        ...dayActivities,
-    ]));
+    // Activities only (without transports) for initial review
+    const activitiesDays = activityDays.map((dayActivities) => dayActivities);
 
-    const [attractions, setAttractions] = useState(splitDays);
+    // Interleave transports between activities at their correct positions
+    const splitDays = activityDays.map((dayActivities, dayIndex) => {
+        const dayTransports = transportByDay[dayIndex] || [];
+        const result = [];
+
+        dayActivities.forEach((activity, activityIndex) => {
+            result.push(activity);
+
+            // After each activity (except the last), check if there's a transport segment
+            if (activityIndex < dayActivities.length - 1) {
+                const segmentIndex = activityIndex + 1;
+                const transport = dayTransports.find(t => {
+                    // Transport ID format: "day-{dayIndex+1}-{segmentIndex}"
+                    const expectedId = `day-${dayIndex + 1}-${segmentIndex}`;
+                    return t.id === expectedId;
+                });
+                if (transport) {
+                    result.push(transport);
+                }
+            }
+        });
+
+        return result;
+    });
+
+    const [attractions, setAttractions] = useState(location.state?.fromTransport ? splitDays : activitiesDays);
     const [draggedItem, setDraggedItem] = useState(null);
 
     // Update attractions whenever tripDetails selections change (e.g., after loading existing itinerary)
     useEffect(() => {
-        setAttractions(splitDays);
-    }, [JSON.stringify(transportList), JSON.stringify(attractionList), JSON.stringify(restaurantList), tripDetails.nights]);
+        setAttractions(location.state?.fromTransport ? splitDays : activitiesDays);
+    }, [JSON.stringify(transportList), JSON.stringify(attractionList), JSON.stringify(restaurantList), tripDetails.nights, location.state?.fromTransport]);
     const handleDragStart = (e, index, dayIndex) => {
         const data = { attractionIndex: index, dayIndex: dayIndex };
         setDraggedItem(data)
@@ -392,6 +416,15 @@ function Review() {
                         >
                             Edit
                         </button>
+                        {showTransportButton && (
+                            <button 
+                                className="btn-primary" 
+                                onClick={() => routerNavigate('/journey/transport')}
+                                disabled={isSaving}
+                            >
+                                Choose Transport
+                            </button>
+                        )}
                         <button 
                             className="btn-primary" 
                             onClick={handleCreateJourney}

@@ -50,7 +50,7 @@ export default function Restaurants() {
       nights: tripDetails.nights,
     })
     setTripDetails(prev => ({ ...prev, restaurants: [], dayActivityPlan }))
-    routerNavigate('/journey/transport')
+    routerNavigate('/journey/review')
   }
 
   const handleConfirm = () => {
@@ -61,7 +61,7 @@ export default function Restaurants() {
       nights: tripDetails.nights,
     })
     setTripDetails(prev => ({ ...prev, restaurants: chosenRestaurants, dayActivityPlan }))
-    routerNavigate('/journey/transport')
+    routerNavigate('/journey/review')
   }
 
   return (

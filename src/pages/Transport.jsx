@@ -147,7 +147,7 @@ export default function Transport() {
 		...prev,
 		transport: selectedTransport
 		}));
-		routerNavigate('/journey/review')
+		routerNavigate('/journey/review', { state: { fromTransport: true } })
 	}
 
 	return (
