@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import AttractionCard from '../components/AttractionCard'
 import './Review.css'
 import { useNavigate, useOutletContext, useLocation } from 'react-router-dom'
-import { createItinerary, updateItinerary, saveReviewSelections, toIsoDate, getAccommodations, getRestaurants, getAttractions, getTransport, deleteItineraryContent } from '../services/databaseApi'
+import { createItinerary, updateItinerary, deleteItinerary, saveReviewSelections, toIsoDate, getAccommodations, getRestaurants, getAttractions, getTransport, deleteItineraryContent } from '../services/databaseApi'
 
 function Day({dayIndex, attractions, onDragStart, onDragOver, onDrop}) {
     return (
@@ -261,6 +261,28 @@ function Review() {
         }
     };
 
+    const handleDeleteJourney = async () => {
+        if (isSaving) return;
+        if (!tripDetails.itinerary_id) return;
+
+        const confirmed = window.confirm('Delete this itinerary? This action cannot be undone.');
+        if (!confirmed) return;
+
+        setIsSaving(true);
+        setSaveError('');
+
+        try {
+            await deleteItinerary(tripDetails.itinerary_id);
+            sessionStorage.removeItem('active_trip');
+            sessionStorage.removeItem('last_saved_itinerary_id');
+            routerNavigate('/');
+        } catch (err) {
+            setSaveError(err.message ?? 'Failed to delete itinerary.');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     return (
         <main className="review-page">
             <h1>Review Trip Details</h1>
@@ -298,6 +320,15 @@ function Review() {
                         >
                             {isSaving ? 'Saving...' : tripDetails.itinerary_id ? 'Update Journey' : 'Create My Journey'}
                         </button>
+                        {tripDetails.itinerary_id ? (
+                            <button
+                                className="btn-secondary"
+                                onClick={handleDeleteJourney}
+                                disabled={isSaving}
+                            >
+                                Delete Journey
+                            </button>
+                        ) : null}
                     </div>
                 </>
             )}
