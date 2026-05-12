@@ -133,6 +133,21 @@ h1 {
   text-align: center;
 }
 
+.accommodation-review-section {
+  background-color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: calc(var(--spacing) / 2);
+  margin: calc(var(--spacing) / 2);
+}
+
+.accommodation-review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 
 .review-footer-actions, 
 .register-actions-footer {

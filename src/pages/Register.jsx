@@ -1,11 +1,17 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { createUser } from '../services/databaseApi'
+import { hashPassword } from '../services/passwordAuth'
 import './Register.css'
 
-export default function Register({ navigate, login }) {
+export default function Register() {
+  const navigate = useNavigate()
   const [username, setUsername] = useState('')
   const [email,    setEmail]    = useState('')
   const [password, setPassword] = useState('')
   const [errors,   setErrors]   = useState({})
+  const [apiError, setApiError] = useState('')
+  const [success,  setSuccess]  = useState('')
   const [loading,  setLoading]  = useState(false)
 
   const validate = () => {
@@ -19,15 +25,46 @@ export default function Register({ navigate, login }) {
     return e
   }
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
+    setApiError('')
+    setSuccess('')
+
     const e = validate()
     if (Object.keys(e).length > 0) { setErrors(e); return }
 
     setLoading(true)
-    setTimeout(() => {
-      login({ email, username })
-      navigate('home')
-    }, 500)
+    try {
+      const createdUser = await createUser({
+        email: email.trim().toLowerCase(),
+        password_hash: await hashPassword(password),
+      })
+
+      if (!createdUser?.user_id) {
+        throw new Error('Could not create account.')
+      }
+
+      localStorage.setItem(
+        'cmj_user',
+        JSON.stringify({
+          user_id: createdUser.user_id,
+          email: createdUser.email,
+          username: username.trim(),
+        }),
+      )
+
+      setSuccess('Account created successfully. Redirecting...')
+      setTimeout(() => {
+        navigate('/')
+      }, 500)
+    } catch (error) {
+      if (String(error?.message ?? '').includes('409')) {
+        setApiError('An account with this email already exists.')
+      } else {
+        setApiError('Unable to create account right now. Please try again.')
+      }
+    } finally {
+      setLoading(false)
+    }
   }
 
   const setField = (field, val) => {
@@ -41,7 +78,7 @@ export default function Register({ navigate, login }) {
     <div className="register-page">
       <div className="register-card">
         {/* Logo */}
-        <div className="register-logo" onClick={() => navigate('home')} title="Back to home">
+        <div className="register-logo" onClick={() => navigate('/')} title="Back to home">
           CMJ
         </div>
 
@@ -100,9 +137,12 @@ export default function Register({ navigate, login }) {
             {loading ? 'Creating account…' : 'Register'}
           </button>
 
+          {apiError && <p className="error-text">{apiError}</p>}
+          {success && <p className="helper-text">{success}</p>}
+
           <p className="register-link">
             Already have an account?{' '}
-            <span onClick={() => navigate('home')}>Login here</span>
+            <span onClick={() => navigate('/')}>Login here</span>
           </p>
         </div>
       </div>

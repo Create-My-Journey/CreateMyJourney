@@ -1,75 +1,50 @@
 import { useMemo, useState } from 'react'
-import { useNavigate, useLocation, useOutletContext } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
+import { buildDayActivityPlan } from '../services/itinerarySplit'
 import './Transport.css'
 
-const SEGMENTS = [
+const buildSegmentOptions = (segmentId, fromName, toName) => ([
 	{
-		id: 'bucharest-to-tokyo-hotel',
-		title: 'Bucharest (OTP) -> Hotel Gracery Shinjuku, Tokyo',
-		options: [
-			{
-				id: 'otp-hnd-frankfurt-jr',
-				label: '06:10 OTP -> 06:55 HND (next day)',
-				description:
-					'Lufthansa + ANA, 19h 45m, 1 stop in Frankfurt, then Tokyo Monorail + JR Yamanote to Shinjuku, around $980',
-			},
-			{
-				id: 'otp-nrt-doha-limousine',
-				label: '15:40 OTP -> 17:35 NRT (next day)',
-				description:
-					'Qatar Airways, 20h 55m, 1 stop in Doha, then Narita Express + local line to hotel area, around $910',
-			},
-			{
-				id: 'otp-hnd-istanbul-direct-bus',
-				label: '09:30 OTP -> 08:40 HND (next day)',
-				description:
-					'Turkish Airlines, 17h 10m, 1 stop in Istanbul, then airport limousine bus direct to Shinjuku, around $1040',
-			},
-		],
+		id: `${segmentId}-transit`,
+		label: `Transit: ${fromName} -> ${toName}`,
+		description: 'Public transport route with transfers if needed. Usually budget-friendly.',
 	},
 	{
-		id: 'hotel-to-restaurant',
-		title: 'Hotel Gracery Shinjuku -> Ichiran Shibuya (popular ramen)',
-		options: [
-			{
-				id: 'jr-yamanote-direct',
-				label: 'JR Yamanote Line via Shibuya Station',
-				description: '26 min total, no major transfer, around ¥210, runs every 3-5 minutes',
-			},
-			{
-				id: 'fukutoshin-line-fast-walk',
-				label: 'Fukutoshin Line + short walk',
-				description: '22 min total, fastest in rush hour, around ¥240, 7 minute walk at end',
-			},
-			{
-				id: 'taxi-door-to-door',
-				label: 'Taxi door-to-door',
-				description: '18-30 min depending on traffic, no transfers, around ¥2200-¥3100',
-			},
-		],
+		id: `${segmentId}-taxi`,
+		label: `Taxi: ${fromName} -> ${toName}`,
+		description: 'Door-to-door ride, typically faster and more convenient for short hops.',
 	},
 	{
-		id: 'restaurant-to-hotel-return',
-		title: 'Ichiran Shibuya -> Hotel Gracery Shinjuku (return)',
-		options: [
-			{
-				id: 'jr-return-late-evening',
-				label: 'JR Yamanote return route',
-				description: '24 min average, stable evening schedule, around ¥210',
-			},
-			{
-				id: 'fukutoshin-return',
-				label: 'Fukutoshin + station transfer',
-				description: '21 min total, 1 short underground transfer, around ¥240',
-			},
-			{
-				id: 'night-taxi',
-				label: 'Night taxi route',
-				description: '20-35 min, direct to hotel entrance, around ¥2800-¥3600 after 22:00',
-			},
-		],
+		id: `${segmentId}-bus`,
+		label: `Bus: ${fromName} -> ${toName}`,
+		description: 'Direct or semi-direct bus option where available.',
 	},
-]
+])
+
+function buildSegmentsFromDays(days) {
+	const segments = []
+
+	days.forEach((dayItems, dayIndex) => {
+		for (let i = 0; i < dayItems.length - 1; i += 1) {
+			const fromItem = dayItems[i]
+			const toItem = dayItems[i + 1]
+			const fromName = fromItem?.name || `${fromItem?.itemType || 'Activity'} ${i + 1}`
+			const toName = toItem?.name || `${toItem?.itemType || 'Activity'} ${i + 2}`
+			const segmentId = `day-${dayIndex + 1}-${i + 1}`
+
+			segments.push({
+				id: segmentId,
+				dayIndex,
+				title: `Day ${dayIndex + 1}: ${fromName} -> ${toName}`,
+				fromName,
+				toName,
+				options: buildSegmentOptions(segmentId, fromName, toName),
+			})
+		}
+	})
+
+	return segments
+}
 
 const TRANSPORT_TYPES = ['Flight', 'Transit', 'Taxi', 'Bus']
 
@@ -77,11 +52,20 @@ export default function Transport() {
 
 	const routerNavigate = useNavigate()
 	const [tripDetails, setTripDetails] = useOutletContext();
-	// console.log(tripDetails)
+	const dayActivityPlan = useMemo(
+		() => tripDetails.dayActivityPlan || buildDayActivityPlan({
+			attractions: tripDetails.attractions || [],
+			restaurants: tripDetails.restaurants || [],
+			nights: tripDetails.nights,
+		}),
+		[tripDetails.dayActivityPlan, tripDetails.attractions, tripDetails.restaurants, tripDetails.nights],
+	)
+	const segments = useMemo(() => buildSegmentsFromDays(dayActivityPlan), [dayActivityPlan])
 
-	let initialIndex = 0
-	const initialSelection = SEGMENTS.reduce((acc, segment, index) => {
-		acc[segment.id] = (tripDetails.transport == null ? segment.options[0].id : tripDetails.transport[index].option_id)
+	const initialSelection = segments.reduce((acc, segment, index) => {
+		const restored = tripDetails.transport?.[index]?.option_id ?? tripDetails.transport?.[index]?.id
+		const existsInSegment = segment.options.some((option) => option.id === restored)
+		acc[segment.id] = existsInSegment ? restored : segment.options[0]?.id
 		return acc
 	}, {});
 
@@ -108,13 +92,13 @@ export default function Transport() {
 		setSelectedTypes((prev) => ({ ...prev, [type]: !prev[type] }))
 	}
 
-	const activeSegment = SEGMENTS[activeSegmentIndex]
+	const activeSegment = segments[activeSegmentIndex]
 
 	const moveSegment = (direction) => {
 		setActiveSegmentIndex((prev) => {
 			const next = prev + direction
 			if (next < 0) return 0
-			if (next > SEGMENTS.length - 1) return SEGMENTS.length - 1
+			if (next > segments.length - 1) return segments.length - 1
 			return next
 		})
 	}
@@ -130,7 +114,7 @@ export default function Transport() {
 
 	const handleConfirm = () => {
 		const chosenTypes = TRANSPORT_TYPES.filter((type) => selectedTypes[type])
-		const selectedTransport = SEGMENTS.map((segment) => {
+		const selectedTransport = segments.map((segment) => {
 			const chosenOption = segment.options.find((option) => option.id === selectedBySegment[segment.id])
 			if (!chosenOption) return null
 
@@ -146,6 +130,7 @@ export default function Transport() {
 				tags: ['Transport', ...chosenTypes],
 				description: chosenOption.description,
 				image: null,
+				dayIndex: segment.dayIndex,
 			}
 		}).filter(Boolean)
 
@@ -162,14 +147,20 @@ export default function Transport() {
 		...prev,
 		transport: selectedTransport
 		}));
-		routerNavigate('/journey/review')
+		routerNavigate('/journey/review', { state: { fromTransport: true } })
 	}
 
 	return (
 		<div className="tr-page">
+			{segments.length === 0 ? (
+				<div className="places-status" style={{ margin: '2rem auto', maxWidth: '720px' }}>
+					<p>Add at least two activities in a day to generate transport segments.</p>
+				</div>
+			) : null}
+
 			{/* Page Header matching Choose Attractions */}
 			<div className="tr-header">
-				<span className="tr-eyebrow">Demo journey: Bucharest to Tokyo to dinner spot to hotel</span>
+				<span className="tr-eyebrow">Routes are generated from your per-day split activities</span>
 				<div className="tr-title-row">
 					<h1 className="tr-title">Choose Transport</h1>
 				</div>
@@ -181,25 +172,25 @@ export default function Transport() {
 			<main className="tr-main" aria-label="Transport planner">
 				<section className="tr-content" role="region" aria-label="Trip segments">
 					<div className="segment-slider-head">
-						<h2 className="segment-title">{activeSegment.title}</h2>
+						<h2 className="segment-title">{activeSegment?.title || 'No segments yet'}</h2>
 						<div className="segment-nav-group">
 							<button
 								type="button"
 								className="segment-nav"
 								onClick={() => moveSegment(-1)}
-								disabled={activeSegmentIndex === 0}
+								disabled={activeSegmentIndex === 0 || segments.length === 0}
 								aria-label="Previous segment"
 							>
 								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6"/></svg>
 							</button>
 							<p className="segment-counter">
-								{activeSegmentIndex + 1} / {SEGMENTS.length}
+								{segments.length === 0 ? '0 / 0' : `${activeSegmentIndex + 1} / ${segments.length}`}
 							</p>
 							<button
 								type="button"
 								className="segment-nav"
 								onClick={() => moveSegment(1)}
-								disabled={activeSegmentIndex === SEGMENTS.length - 1}
+								disabled={segments.length === 0 || activeSegmentIndex === segments.length - 1}
 								aria-label="Next segment"
 							>
 								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
@@ -208,7 +199,7 @@ export default function Transport() {
 					</div>
 
 					<div className="segment-options">
-						{activeSegment.options.map((option) => {
+						{(activeSegment?.options || []).map((option) => {
 							const inputId = `${activeSegment.id}-${option.id}`
 							const isSelected = selectedBySegment[activeSegment.id] === option.id;
 							
@@ -235,7 +226,7 @@ export default function Transport() {
 					</div>
 
 					<div className="segment-dots" aria-label="Segment navigation">
-						{SEGMENTS.map((segment, index) => (
+						{segments.map((segment, index) => (
 							<button
 								type="button"
 								key={segment.id}
@@ -277,7 +268,7 @@ export default function Transport() {
 								value={maxBudget}
 								onChange={(e) => setMaxBudget(Number(e.target.value))}
 							/>
-							<p className="filter-description">Includes flights + local rides for this demo itinerary</p>
+								<p className="filter-description">Includes local rides between your selected activities.</p>
 						</div>
 
 						<div className="filter-subgroup">
@@ -321,7 +312,7 @@ export default function Transport() {
 				<button className="btn btn-ghost" onClick={handleSkip}>
 					Skip Transport
 				</button>
-				<button className="btn btn-primary" onClick={handleConfirm}>
+				<button className="btn btn-primary" onClick={handleConfirm} disabled={segments.length === 0}>
 					Confirm
 					<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" width="14" height="14">
 						<path d="M3 8h10M9 4l4 4-4 4" />

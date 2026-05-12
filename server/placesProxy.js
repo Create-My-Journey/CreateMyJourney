@@ -7,7 +7,7 @@ const PORT = 3001
 
 const API_KEY = process.env.GOOGLE_MAPS_API_KEY
 if (!API_KEY) {
-  console.error('❌  GOOGLE_MAPS_API_KEY is not set. Add it to your .env file.')
+  console.error('GOOGLE_MAPS_API_KEY is not set. Add it to your .env file.')
   process.exit(1)
 }
 
@@ -84,5 +84,5 @@ app.get('/api/places/photo', async (req, res) => {
 })
 
 app.listen(PORT, () => {
-  console.log(`✅  Places proxy running at http://localhost:${PORT}`)
+  console.log(`Places proxy running at http://localhost:${PORT}`)
 })

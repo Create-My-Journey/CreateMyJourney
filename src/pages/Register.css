@@ -62,3 +62,9 @@
   flex-direction: column;
   gap: 0.25rem;
 }
+
+.helper-text {
+  margin: 0;
+  color: #2f855a;
+  font-size: 0.9rem;
+}
