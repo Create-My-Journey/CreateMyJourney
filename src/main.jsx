@@ -10,6 +10,7 @@ import ChooseAccommodation from './pages/ChooseAccommodation.jsx'
 import Restaurants from './pages/Restaurants.jsx'
 import ChooseAttractions from './pages/ChooseAttractions.jsx'
 import Review from './pages/Review.jsx'
+import AutoJourney from './pages/AutoJourney.jsx'
 import { createBrowserRouter, RouterProvider, } from 'react-router-dom'
 
 const router = createBrowserRouter([
@@ -48,6 +49,10 @@ const router = createBrowserRouter([
       {
         path: "review",
         element: <Review />
+      },
+      {
+        path: "auto",
+        element: <AutoJourney />
       }
     ]
   }
