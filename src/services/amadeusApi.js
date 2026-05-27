@@ -93,3 +93,21 @@ export async function searchGroundTransport({ from, to, mode = 'all' }) {
     return { options: [], source: 'error', error: err.message }
   }
 }
+
+/**
+ * Get intracity transit directions between two places.
+ * @param {string} origin
+ * @param {string} destination 
+ * @param {string} mode (default 'transit')
+ */
+export async function getDirectionsBetweenPlaces(origin, destination, mode = 'transit') {
+  if (!origin || !destination) return null
+  
+  const params = new URLSearchParams({ origin, destination, mode })
+  try {
+    return await requestJson(`${BASE}/directions?${params}`, 'Directions fetch failed')
+  } catch (err) {
+    console.error('getDirectionsBetweenPlaces error:', err.message)
+    return null
+  }
+}

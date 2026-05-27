@@ -11,6 +11,11 @@ export default defineConfig({
         target: 'http://localhost:3001',
         changeOrigin: true,
       },
+      // Proxy /api/transport/* → the same Express server (Amadeus transport)
+      '/api/transport': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
       // Proxy /api/db/* → PostgREST for direct database access
       '/api/db': {
         target: 'http://localhost:3000',

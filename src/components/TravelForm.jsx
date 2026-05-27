@@ -6,7 +6,11 @@ import './TravelForm.css'
 const today = new Date()
 
 export default function TravelForm({ onComplete }) {
-  // Location — we store both the display text and the placeId from Google
+  // Origin — where the user is travelling FROM
+  const [originLocation,    setOriginLocation]    = useState('')
+  const [originLocationErr, setOriginLocationErr] = useState('')
+
+  // Destination — where the user is travelling TO
   const [location,     setLocation]     = useState('')
   const [locationErr,  setLocationErr]  = useState('')
 
@@ -27,13 +31,21 @@ export default function TravelForm({ onComplete }) {
 
   // ── Handlers ──
 
-  // Called on every keystroke — user is still typing
+  const handleOriginChange = (val) => {
+    setOriginLocation(val)
+    setOriginLocationErr('')
+  }
+
+  const handleOriginSelect = (description, _placeId) => {
+    setOriginLocation(description)
+    setOriginLocationErr('')
+  }
+
   const handleLocationChange = (val) => {
     setLocation(val)
     setLocationErr('')
   }
 
-  // Called when user picks a suggestion — description is the full text, placeId for future use
   const handleLocationSelect = (description, _placeId) => {
     setLocation(description)
     setLocationErr('')
@@ -69,29 +81,11 @@ export default function TravelForm({ onComplete }) {
   const handleSubmit = () => {
     let valid = true
 
-    // TODO: uncomment this to enable validation again
-    // if (!location) {
-    //   setLocationErr('Location is required'); valid = false
-    // }
-
-    // if (!date) { setDateErr('Start date is required'); valid = false }
-
     const n = validateInt(nights)
-    // if (!nights) {
-    //   setNightsErr('Number of nights is required'); valid = false
-    // } else if (n === false) {
-    //   setNightsErr('Must be an integer bigger than 0'); valid = false
-    // }
-
     const p = validateInt(people)
-    // if (!people) {
-    //   setPeopleErr('Number of persons is required'); valid = false
-    // } else if (p === false) {
-    //   setPeopleErr('Must be an integer bigger than 0'); valid = false
-    // }
 
     if (valid) {
-      onComplete({ location, date, nights: n, people: p })
+      onComplete({ originLocation, location, date, nights: n, people: p })
     }
   }
 
@@ -101,11 +95,31 @@ export default function TravelForm({ onComplete }) {
 
   return (
     <div className="travel-form">
-      <div className="form-fields-row">
+      {/* ── Row 1: Origin → Destination ── */}
+      <div className="form-fields-row form-route-row">
 
-        {/* ── Location ── */}
+        {/* ── Origin (From) ── */}
         <div className="form-field">
-          <label className="field-label">Location</label>
+          <label className="field-label">From</label>
+          <LocationAutocomplete
+            value={originLocation}
+            onChange={handleOriginChange}
+            onSelect={handleOriginSelect}
+            error={originLocationErr}
+            placeholder="Departure city"
+          />
+        </div>
+
+        {/* ── Route arrow ── */}
+        <div className="form-route-arrow" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </div>
+
+        {/* ── Destination (To) ── */}
+        <div className="form-field">
+          <label className="field-label">To</label>
           <LocationAutocomplete
             value={location}
             onChange={handleLocationChange}
@@ -114,6 +128,10 @@ export default function TravelForm({ onComplete }) {
             placeholder="Where to?"
           />
         </div>
+      </div>
+
+      {/* ── Row 2: Date, Nights, People ── */}
+      <div className="form-fields-row">
 
         {/* ── Date ── */}
         <div className="form-field" style={{ position: 'relative' }}>
