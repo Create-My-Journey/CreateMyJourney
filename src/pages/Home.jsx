@@ -87,8 +87,7 @@ export default function Home({ user, login, logout }) {
       return
     }
 
-    // TODO: navigate to auto page with formData
-    alert(`Navigating to "${mode.toUpperCase()}" mode\n\nTrip: ${formData.location}\nDate: ${formData.date.toLocaleDateString()}\nNights: ${formData.nights}  ·  People: ${formData.people}`)
+    routerNavigate('journey/auto', { state: { ...formData, tripId: Date.now() } })
   }
 
   const handleJourneyClick = (journey) => {
