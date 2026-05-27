@@ -92,7 +92,7 @@ export default function Home({ user, login, logout }) {
   }
 
   const handleJourneyClick = (journey) => {
-    // Navigate directly to journey review page with existing itinerary for editing
+    // Open the final review state so saved transport selections are shown immediately.
     routerNavigate('journey/review', {
       state: {
         itinerary_id: journey.id,
@@ -100,6 +100,7 @@ export default function Home({ user, login, logout }) {
         date: new Date(journey.startDate),
         nights: journey.nights,
         people: journey.people,
+        reviewMode: 'final',
       },
     })
   }

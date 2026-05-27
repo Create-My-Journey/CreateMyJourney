@@ -25,6 +25,51 @@ function toLocalIsoDate(value) {
     return `${year}-${month}-${day}`;
 }
 
+function parseSavedOrderMetadata(notes) {
+    const match = String(notes ?? '').match(/^\[day:(\d+),order:(\d+)\]\s*(.*)$/)
+
+    if (!match) {
+        return {
+            dayIndex: null,
+            orderIndex: null,
+            noteText: String(notes ?? ''),
+        }
+    }
+
+    return {
+        dayIndex: Number.parseInt(match[1], 10) - 1,
+        orderIndex: Number.parseInt(match[2], 10) - 1,
+        noteText: match[3] ?? '',
+    }
+}
+function buildSavedDayActivityPlan({ attractions = [], restaurants = [], transport = [] }) {
+    const dayMap = new Map()
+
+    const pushItem = (item) => {
+        const dayIndex = Number.isInteger(item.dayIndex) ? item.dayIndex : 0
+        const orderIndex = Number.isInteger(item.orderIndex) ? item.orderIndex : Number.MAX_SAFE_INTEGER
+        if (!dayMap.has(dayIndex)) {
+            dayMap.set(dayIndex, [])
+        }
+        dayMap.get(dayIndex).push({ ...item, orderIndex })
+    }
+
+    attractions.forEach(pushItem)
+    restaurants.forEach(pushItem)
+    transport.forEach(pushItem)
+
+    const maxDayIndex = Math.max(-1, ...Array.from(dayMap.keys()))
+    return Array.from({ length: Math.max(1, maxDayIndex + 1) }, (_, dayIndex) =>
+        (dayMap.get(dayIndex) || []).sort((left, right) => left.orderIndex - right.orderIndex),
+    )
+}
+
+function formatTransportLabel(vehicleType, origin, destination) {
+    const type = String(vehicleType ?? 'Transport').trim()
+    const readableType = type ? type.charAt(0).toUpperCase() + type.slice(1) : 'Transport'
+    return `${readableType}: ${origin} -> ${destination}`
+}
+
 function Day({dayIndex, attractions, onDragStart, onDragOver, onDrop}) {
     return (
         <section className="day-card">
@@ -32,7 +77,7 @@ function Day({dayIndex, attractions, onDragStart, onDragOver, onDrop}) {
             <ol className="attractions-container">
                 { attractions.map((attraction, index) => {
                     return <Attraction 
-                        key={attraction.id || index} // Added key here
+                        key={attraction.id || index}
                         index={index}
                         dayIndex={dayIndex}
                         onDragStart={onDragStart}
@@ -75,7 +120,8 @@ function Review() {
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const showTransportButton = !location.state?.fromTransport;
+    const isFinalReview = location.state?.reviewMode === 'final' || location.state?.fromTransport;
+    const showTransportButton = !isFinalReview;
 
     const getCurrentUserId = () => {
         try {
@@ -96,20 +142,10 @@ function Review() {
         setTripDetails((prev) => ({ ...prev, ...location.state }));
     }, [location.state, setTripDetails, tripDetails?.itinerary_id]);
     
-    // Load existing selections when editing an itinerary (but only if not already loaded from context)
+    // Load existing selections when editing a saved itinerary.
     useEffect(() => {
-        if (!tripDetails.itinerary_id) {
-            setIsLoading(false);
-            return;
-        }
-
-        // If selections already exist in context (from editing), don't load from DB
-        const hasUserSelections = (tripDetails.accommodation && tripDetails.accommodation.length > 0) ||
-                                  (tripDetails.restaurants && tripDetails.restaurants.length > 0) ||
-                                  (tripDetails.attractions && tripDetails.attractions.length > 0) ||
-                                  (tripDetails.transport && tripDetails.transport.length > 0);
-
-        if (hasUserSelections) {
+        const routeItineraryId = location.state?.itinerary_id ?? null
+        if (!routeItineraryId) {
             setIsLoading(false);
             return;
         }
@@ -119,68 +155,92 @@ function Review() {
         const loadExistingSelections = async () => {
             try {
                 const [accommodations, restaurants, attractions, transport] = await Promise.all([
-                    getAccommodations(tripDetails.itinerary_id),
-                    getRestaurants(tripDetails.itinerary_id),
-                    getAttractions(tripDetails.itinerary_id),
-                    getTransport(tripDetails.itinerary_id),
+                    getAccommodations(routeItineraryId),
+                    getRestaurants(routeItineraryId),
+                    getAttractions(routeItineraryId),
+                    getTransport(routeItineraryId),
                 ]);
+
+                const stripDayPrefix = (s) => String(s ?? '').replace(/^\s*Day\s*\d+:\s*/i, '').trim()
+
+                const mappedAccommodations = accommodations.map(a => ({
+                    id: a.place_id,
+                    name: stripDayPrefix(a.name),
+                    itemType: 'Accommodation',
+                    type: a.property_type,
+                    pricePerNight: a.price_range,
+                    rating: a.star_rating || 0,
+                    image: a.photo_url,
+                    description: a.notes || '',
+                    address: a.address,
+                    category: a.property_type || 'Accommodation',
+                    price: a.price_range,
+                    hours: a.address || '',
+                    tags: a.property_type ? [a.property_type] : ['accommodation'],
+                    ...parseSavedOrderMetadata(a.notes),
+                }));
+
+                const mappedRestaurants = restaurants.map(r => ({
+                    id: r.place_id,
+                    itemType: 'Restaurant',
+                    name: stripDayPrefix(r.name),
+                    type: r.cuisine_type,
+                    price: r.price_level,
+                    rating: r.rating || 0,
+                    image: r.photo_url,
+                    description: r.notes || '',
+                    address: r.address,
+                    category: r.cuisine_type || 'Restaurant',
+                    hours: r.address || '',
+                    tags: r.cuisine_type ? [r.cuisine_type] : ['restaurant'],
+                    ...parseSavedOrderMetadata(r.notes),
+                }));
+
+                const mappedAttractions = attractions.map(a => ({
+                    id: a.place_id,
+                    itemType: 'Attraction',
+                    name: stripDayPrefix(a.name),
+                    category: a.category,
+                    rating: a.rating || 0,
+                    image: a.photo_url,
+                    description: a.notes || '',
+                    suggested_duration_mins: a.suggested_duration_mins,
+                    address: a.address,
+                    price: '',
+                    hours: a.address || '',
+                    tags: a.category ? [a.category] : ['attraction'],
+                    ...parseSavedOrderMetadata(a.notes),
+                }));
+
+                const mappedTransport = transport.map(t => ({
+                    id: t.id,
+                    option_id: t.booking_reference ?? null,
+                    name: formatTransportLabel(t.vehicle_type, stripDayPrefix(t.origin_id), stripDayPrefix(t.destination_id)),
+                    hours: `${stripDayPrefix(t.origin_id)} -> ${stripDayPrefix(t.destination_id)}`,
+                    type: t.vehicle_type,
+                    itemType: 'Transport',
+                    price: t.price || '',
+                    tags: [t.vehicle_type],
+                    notes: t.notes,
+                    category: t.vehicle_type,
+                    rating: 0,
+                    description: parseSavedOrderMetadata(t.notes).noteText || t.notes || '',
+                    image: '',
+                    ...parseSavedOrderMetadata(t.notes),
+                }));
+                const hasSavedOrder = [...mappedAttractions, ...mappedRestaurants, ...mappedTransport].some(i => Number.isInteger(i.dayIndex));
+                const dayActivityPlanFromSaved = hasSavedOrder
+                    ? buildSavedDayActivityPlan({ attractions: mappedAttractions, restaurants: mappedRestaurants, transport: mappedTransport })
+                    : null;
 
                 setTripDetails(prev => ({
                     ...prev,
-                    accommodation: accommodations.map(a => ({
-                        id: a.place_id,
-                        name: a.name,
-                        type: a.property_type,
-                        pricePerNight: a.price_range,
-                        rating: a.star_rating || 0,
-                        image: a.photo_url,
-                        description: a.notes || '',
-                        address: a.address,
-                        category: a.property_type || 'Accommodation',
-                        price: a.price_range,
-                        hours: a.address || '',
-                        tags: a.property_type ? [a.property_type] : ['accommodation'],
-                    })),
-                    restaurants: restaurants.map(r => ({
-                        id: r.place_id,
-                        name: r.name,
-                        type: r.cuisine_type,
-                        price: r.price_level,
-                        rating: r.rating || 0,
-                        image: r.photo_url,
-                        description: r.notes || '',
-                        address: r.address,
-                        category: r.cuisine_type || 'Restaurant',
-                        hours: r.address || '',
-                        tags: r.cuisine_type ? [r.cuisine_type] : ['restaurant'],
-                    })),
-                    attractions: attractions.map(a => ({
-                        id: a.place_id,
-                        name: a.name,
-                        category: a.category,
-                        rating: a.rating || 0,
-                        image: a.photo_url,
-                        description: a.notes || '',
-                        suggested_duration_mins: a.suggested_duration_mins,
-                        address: a.address,
-                        price: '',
-                        hours: a.address || '',
-                        tags: a.category ? [a.category] : ['attraction'],
-                    })),
-                    transport: transport.map(t => ({
-                        id: t.id,
-                        option_id: t.booking_reference ?? null,
-                        name: `${t.origin_id} to ${t.destination_id}`,
-                        hours: `${t.origin_id} -> ${t.destination_id}`,
-                        type: t.vehicle_type,
-                        price: t.price || '',
-                        tags: [t.vehicle_type],
-                        notes: t.notes,
-                        category: t.vehicle_type,
-                        rating: 0,
-                        description: t.notes || '',
-                        image: '',
-                    })),
+                    itinerary_id: routeItineraryId,
+                    accommodation: mappedAccommodations,
+                    restaurants: mappedRestaurants,
+                    attractions: mappedAttractions,
+                    transport: mappedTransport,
+                    dayActivityPlan: dayActivityPlanFromSaved || prev.dayActivityPlan,
                 }));
             } catch (err) {
                 console.error('Failed to load existing selections:', err);
@@ -191,13 +251,14 @@ function Review() {
         };
 
         loadExistingSelections();
-    }, [tripDetails.itinerary_id]);
+    }, [location.state?.itinerary_id, setTripDetails]);
         
     console.log(tripDetails)
     const transportList = tripDetails.transport || []
     const accommodationList = tripDetails.accommodation || []
     const restaurantList = tripDetails.restaurants || []
     const attractionList = tripDetails.attractions || []
+    const showTransportInline = isFinalReview
 
     const activityDays = tripDetails.dayActivityPlan || buildDayActivityPlan({
         attractions: attractionList,
@@ -205,47 +266,75 @@ function Review() {
         nights: tripDetails.nights,
     });
 
-    const transportItems = transportList.map(item => ({ ...item, itemType: 'Transport' }));
-    const hasTransportDayIndex = transportItems.some((item) => Number.isInteger(item.dayIndex));
-    const transportByDay = hasTransportDayIndex
-        ? activityDays.map((_, dayIndex) => transportItems.filter((item) => item.dayIndex === dayIndex))
-        : splitItemsEvenlyAcrossDays(transportItems, tripDetails.nights);
+    const transportItems = transportList.map(item => ({
+        ...item,
+        itemType: 'Transport',
+        dayIndex: Number.isInteger(item.dayIndex) ? item.dayIndex : null,
+        orderIndex: Number.isInteger(item.orderIndex) ? item.orderIndex : null,
+    }));
+    const transportByDay = activityDays.map((_, dayIndex) => transportItems.filter((item) => item.dayIndex === dayIndex));
 
     // Activities only (without transports) for initial review
     const activitiesDays = activityDays.map((dayActivities) => dayActivities);
 
-    // Interleave transports between activities at their correct positions
-    const splitDays = activityDays.map((dayActivities, dayIndex) => {
-        const dayTransports = transportByDay[dayIndex] || [];
-        const result = [];
+    // If the reconstructed activityDays already include transport items (saved reconstruction),
+    // use them as-is. Otherwise, interleave transports into activity lists at saved positions.
+    const activityDaysContainTransport = activityDays.some(day => day.some(item => (item.itemType || '').toLowerCase() === 'transport'));
 
-        dayActivities.forEach((activity, activityIndex) => {
-            result.push(activity);
+    const splitDays = activityDaysContainTransport
+        ? activityDays
+        : activityDays.map((dayActivities, dayIndex) => {
+            const accommodationOffset = dayIndex === 0 ? accommodationList.length : 0;
+            const dayTransports = [...(transportByDay[dayIndex] || [])]
+                .sort((left, right) => (left.orderIndex ?? Number.MAX_SAFE_INTEGER) - (right.orderIndex ?? Number.MAX_SAFE_INTEGER));
+            const result = [];
+            let transportCursor = 0;
 
-            // After each activity (except the last), check if there's a transport segment
-            if (activityIndex < dayActivities.length - 1) {
-                const segmentIndex = activityIndex + 1;
-                const transport = dayTransports.find(t => {
-                    // Transport ID format: "day-{dayIndex+1}-{segmentIndex}"
-                    const expectedId = `day-${dayIndex + 1}-${segmentIndex}`;
-                    return t.id === expectedId;
-                });
-                if (transport) {
+            const pushMatchingTransports = (targetIndex) => {
+                while (transportCursor < dayTransports.length) {
+                    const transport = dayTransports[transportCursor];
+                    const adjustedOrderIndex = Number.isInteger(transport.orderIndex)
+                        ? Math.max(0, transport.orderIndex - accommodationOffset)
+                        : null;
+
+                    if (adjustedOrderIndex !== targetIndex) {
+                        break;
+                    }
+
                     result.push(transport);
+                    transportCursor += 1;
                 }
+            };
+
+            pushMatchingTransports(0);
+
+            dayActivities.forEach((activity, activityIndex) => {
+                result.push(activity);
+                pushMatchingTransports(activityIndex + 1);
+            });
+
+            while (transportCursor < dayTransports.length) {
+                result.push(dayTransports[transportCursor]);
+                transportCursor += 1;
             }
+
+            return result;
         });
 
-        return result;
-    });
-
-    const [attractions, setAttractions] = useState(location.state?.fromTransport ? splitDays : activitiesDays);
+    const [attractions, setAttractions] = useState(showTransportInline ? splitDays : activitiesDays);
     const [draggedItem, setDraggedItem] = useState(null);
 
     // Update attractions whenever tripDetails selections change (e.g., after loading existing itinerary)
     useEffect(() => {
-        setAttractions(location.state?.fromTransport ? splitDays : activitiesDays);
-    }, [JSON.stringify(transportList), JSON.stringify(attractionList), JSON.stringify(restaurantList), tripDetails.nights, location.state?.fromTransport]);
+        setAttractions(showTransportInline ? splitDays : activitiesDays);
+    }, [
+        JSON.stringify(transportList),
+        JSON.stringify(attractionList),
+        JSON.stringify(restaurantList),
+        JSON.stringify(accommodationList),
+        tripDetails.nights,
+        showTransportInline,
+    ]);
     const handleDragStart = (e, index, dayIndex) => {
         const data = { attractionIndex: index, dayIndex: dayIndex };
         setDraggedItem(data)
@@ -280,11 +369,12 @@ function Review() {
                 ...item,
                 itemType: 'Accommodation',
             }));
+            const daysToSaveBase = showTransportInline ? splitDays : activitiesDays;
             const daysToSave = accommodationItems.length > 0
-                ? (attractions.length > 0
-                    ? attractions.map((day, index) => (index === 0 ? [...accommodationItems, ...day] : day))
+                ? (daysToSaveBase.length > 0
+                    ? daysToSaveBase.map((day, index) => (index === 0 ? [...accommodationItems, ...day] : day))
                     : [accommodationItems])
-                : attractions;
+                : daysToSaveBase;
 
             const existingItinerary = tripDetails.itinerary_id
                 ? await getItinerary(tripDetails.itinerary_id)
@@ -406,7 +496,6 @@ function Review() {
                             />
                         )) }
                     </div>
-
 
                     <div className="review-footer-actions">
                         <button 
