@@ -83,7 +83,7 @@ export default function Home({ user, login, logout }) {
 
   const handleModeSelect = (mode) => {
     if (mode === 'manual') {
-      routerNavigate('journey', {state: {...formData, tripId: Date.now()}})
+      routerNavigate('journey/accommodation', {state: {...formData, tripId: Date.now()}})
       return
     }
 
