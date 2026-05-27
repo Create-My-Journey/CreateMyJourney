@@ -1,0 +1,198 @@
+/* ── Filter Sidebar ── */
+.filter-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.8rem;
+  padding-left: 2rem;
+  border-left: 1px solid var(--border);
+  position: sticky;
+  top: 1rem;
+}
+
+.filter-sidebar-title {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+  margin: 0;
+}
+
+/* ── Filter group ── */
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.filter-group-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ── Pill button group ── */
+.pill-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 100px;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--t);
+  white-space: nowrap;
+}
+
+.pill-btn:hover {
+  border-color: var(--text-muted);
+  color: var(--text);
+}
+
+.pill-btn.active {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--bg);
+}
+
+/* ── Range slider ── */
+.range-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 0.2rem;
+}
+
+.filter-range {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border);
+  accent-color: var(--text);
+  cursor: pointer;
+  outline: none;
+}
+
+.filter-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--text);
+  cursor: pointer;
+  border: 2px solid var(--bg);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+/* ── Reset button ── */
+.filter-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+  padding: 0;
+  margin-top: 0.5rem;
+  transition: color var(--t);
+}
+
+.filter-reset:hover { color: var(--text); }
+
+/* ── Active filter count badge ── */
+.filter-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--text);
+  color: var(--bg);
+  font-size: 0.65rem;
+  font-weight: 700;
+  margin-left: 0.4rem;
+}
+
+/* ── Two-column shell used by Attractions & Restaurants ── */
+.page-shell {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  gap: 0;
+  max-width: 1060px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2.5rem 3.5rem 9rem;
+  align-items: start;
+}
+
+.page-shell-left {
+  min-width: 0;
+  padding-right: 2.5rem;
+}
+
+.page-shell-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.page-shell-right {
+  /* filter-sidebar handles its own padding */
+}
+
+/* ── Result count ── */
+.result-count {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+  letter-spacing: 0.02em;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .page-shell {
+    grid-template-columns: 1fr;
+    padding: 1.5rem 1.25rem 9rem;
+  }
+
+  .page-shell-left {
+    padding-right: 0;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .filter-sidebar {
+    padding-left: 0;
+    border-left: none;
+    padding-top: 1.5rem;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+  }
+
+  .filter-group { flex: 1; min-width: 160px; }
+}

@@ -1,16 +1,27 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import AttractionCard from '../components/AttractionCard'
 import { usePlacesSearch } from '../hooks/usePlacesSearch'
 import { buildDayActivityPlan } from '../services/itinerarySplit'
 import './Restaurants.css'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 
-export default function Restaurants() {
-  const [sortBy, setSortBy]               = useState('Reviews')
-  const [minBudget, setMinBudget]         = useState('')
-  const [maxBudget, setMaxBudget]         = useState('')
-  const [minReviewScore, setMinReviewScore] = useState('')
+const SORT_OPTIONS = [
+  { key: 'rating_desc', label: '★ Rating: High to Low' },
+  { key: 'rating_asc',  label: '★ Rating: Low to High' },
+  { key: 'price_asc',   label: '$ Price: Low to High' },
+  { key: 'price_desc',  label: '$ Price: High to Low' },
+  { key: 'name_asc',    label: 'A–Z Name' },
+]
 
+const RATING_OPTIONS = [
+  { key: 'any', label: 'Any' },
+  { key: '3',   label: '3+' },
+  { key: '3.5', label: '3.5+' },
+  { key: '4',   label: '4+' },
+  { key: '4.5', label: '4.5+' },
+]
+
+export default function Restaurants() {
   const routerNavigate = useNavigate()
   const [tripDetails, setTripDetails] = useOutletContext()
 
@@ -20,20 +31,41 @@ export default function Restaurants() {
       : tripDetails.restaurants.reduce((acc, el) => acc.add(el.id), new Set())
   )
 
-  // ── Real data from Google Places ──
-  const { places: allPlaces, loading, error } = usePlacesSearch(tripDetails.location, 'restaurant', 15)
+  const [sortKey,       setSortKey]       = useState('rating_desc')
+  const [ratingFilter,  setRatingFilter]  = useState('any')
 
-  // ── Client-side sort & filter ──
-  const places = [...allPlaces]
-    .filter(r => {
-      if (minReviewScore && r.rating != null && r.rating < parseFloat(minReviewScore)) return false
-      return true
+  const { places: rawPlaces, loading, error } = usePlacesSearch(tripDetails.location, 'restaurant', 20)
+
+  const places = useMemo(() => {
+    let list = [...rawPlaces]
+
+    if (ratingFilter !== 'any') {
+      const min = parseFloat(ratingFilter)
+      list = list.filter(p => p.rating != null && p.rating >= min)
+    }
+
+    list.sort((a, b) => {
+      switch (sortKey) {
+        case 'rating_desc': return (b.rating ?? 0) - (a.rating ?? 0)
+        case 'rating_asc':  return (a.rating ?? 0) - (b.rating ?? 0)
+        case 'price_asc':   return (a.price?.length ?? 0) - (b.price?.length ?? 0)
+        case 'price_desc':  return (b.price?.length ?? 0) - (a.price?.length ?? 0)
+        case 'name_asc':    return a.name.localeCompare(b.name)
+        default:            return 0
+      }
     })
-    .sort((a, b) => {
-      if (sortBy === 'Rating') return (b.rating ?? 0) - (a.rating ?? 0)
-      // default: Reviews (by rating desc, same as above for now)
-      return (b.rating ?? 0) - (a.rating ?? 0)
-    })
+
+    return list
+  }, [rawPlaces, sortKey, ratingFilter])
+
+  const activeFilterCount = [
+    ratingFilter !== 'any',
+  ].filter(Boolean).length
+
+  const resetFilters = () => {
+    setSortKey('rating_desc')
+    setRatingFilter('any')
+  }
 
   const toggleSelect = (id) => {
     setSelected(prev => {
@@ -54,7 +86,7 @@ export default function Restaurants() {
   }
 
   const handleConfirm = () => {
-    const chosenRestaurants = places.filter(r => selected.has(r.id))
+    const chosenRestaurants = rawPlaces.filter(r => selected.has(r.id))
     const dayActivityPlan = buildDayActivityPlan({
       attractions: tripDetails.attractions || [],
       restaurants: chosenRestaurants,
@@ -83,30 +115,25 @@ export default function Restaurants() {
         </p>
       </div>
 
-      <main className="restaurants-shell" aria-label="Restaurant planner">
-        <section className="restaurants-left">
-          <div className="restaurants-list" aria-label="Restaurant options">
-
-            {loading && (
-              <div className="places-status">
-                <div className="places-spinner" />
-                <p>Finding restaurants in {tripDetails.location}…</p>
-              </div>
-            )}
-
-            {error && (
-              <div className="places-error">
-                <p>⚠️ Couldn't load restaurants: {error}</p>
-                <p className="places-error-sub">Check that the proxy server is running and your API key is set.</p>
-              </div>
-            )}
-
-            {!loading && !error && places.length === 0 && (
-              <div className="places-status">
-                <p>No restaurants found for "{tripDetails.location}".</p>
-              </div>
-            )}
-
+      <main className="page-shell" aria-label="Restaurant planner">
+        {/* ── Left: list ── */}
+        <section className="page-shell-left">
+          {loading && (
+            <div className="places-status">
+              <div className="places-spinner" />
+              <p>Finding restaurants in {tripDetails.location}…</p>
+            </div>
+          )}
+          {error && (
+            <div className="places-error">
+              <p>⚠️ Couldn't load restaurants: {error}</p>
+              <p className="places-error-sub">Check that the proxy server is running and your API key is set.</p>
+            </div>
+          )}
+          {!loading && !error && (
+            <p className="result-count">{places.length} restaurant{places.length !== 1 ? 's' : ''} found</p>
+          )}
+          <div className="page-shell-list">
             {places.map(restaurant => (
               <AttractionCard
                 key={restaurant.id}
@@ -118,48 +145,49 @@ export default function Restaurants() {
           </div>
         </section>
 
-        <aside className="restaurants-right" aria-label="Restaurant filters">
-          <div className="restaurants-toolbar">
-            <div className="tool-col">
-              <div className="tool-head">
-                <h3>Sort By</h3>
-                <span className="tool-icon" aria-hidden="true">↗</span>
+        {/* ── Right: filters ── */}
+        <aside className="page-shell-right">
+          <div className="filter-sidebar">
+            <p className="filter-sidebar-title">
+              Sort & Filter
+              {activeFilterCount > 0 && <span className="filter-badge">{activeFilterCount}</span>}
+            </p>
+
+            <div className="filter-group">
+              <p className="filter-group-label">Sort By</p>
+              <div className="pill-group">
+                {SORT_OPTIONS.map(opt => (
+                  <button
+                    key={opt.key}
+                    className={`pill-btn ${sortKey === opt.key ? 'active' : ''}`}
+                    onClick={() => setSortKey(opt.key)}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
               </div>
-              <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                <option value="Reviews">Reviews</option>
-                <option value="Rating">Rating</option>
-              </select>
             </div>
 
-            <div className="tool-col">
-              <div className="tool-head">
-                <h3>Filter By</h3>
-                <span className="tool-icon" aria-hidden="true">⏃</span>
-              </div>
-
-              <div className="filter-block">
-                <div className="line-row">
-                  <span>Review Score</span>
-                  <span>0–5</span>
-                </div>
-                <input
-                  type="range" min="0" max="5" step="0.5"
-                  value={minReviewScore || 0}
-                  onChange={e => setMinReviewScore(e.target.value)}
-                />
-              </div>
-
-              <div className="value-col value-col-single">
-                <label htmlFor="min-review-score">Min. Review Score</label>
-                <input
-                  id="min-review-score"
-                  type="text"
-                  placeholder="e.g. 4.0"
-                  value={minReviewScore}
-                  onChange={(e) => setMinReviewScore(e.target.value)}
-                />
+            <div className="filter-group">
+              <p className="filter-group-label">Min. Rating</p>
+              <div className="pill-group">
+                {RATING_OPTIONS.map(opt => (
+                  <button
+                    key={opt.key}
+                    className={`pill-btn ${ratingFilter === opt.key ? 'active' : ''}`}
+                    onClick={() => setRatingFilter(opt.key)}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
               </div>
             </div>
+
+            {activeFilterCount > 0 && (
+              <button className="filter-reset" onClick={resetFilters}>
+                ✕ Reset filters
+              </button>
+            )}
           </div>
         </aside>
       </main>
