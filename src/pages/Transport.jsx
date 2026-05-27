@@ -517,9 +517,9 @@ export default function Transport() {
       <main className="tr-main" aria-label="Transport planner">
         <div className="tr-panels">
 
-          {/* ════════════════════════════════════════════════
+          {/* 
               SECTION 1 — Long-haul: Flight / Train / Bus
-          ════════════════════════════════════════════════ */}
+           */}
           {hasRoute && (
             <section className="tr-section" aria-labelledby="longhaul-heading">
               <h2 id="longhaul-heading" className="tr-section-title">
@@ -552,7 +552,7 @@ export default function Transport() {
                   {flightData.loading && <LoadingCards />}
                   {!flightData.loading && flightData.error && (
                     <div className="tr-error-state">
-                      <p>⚠️ Could not load flights. Showing estimates instead.</p>
+                      <p> Could not load flights. Showing estimates instead.</p>
                     </div>
                   )}
                   {!flightData.loading && flightData.flights.length === 0 && !flightData.error && (
@@ -570,7 +570,7 @@ export default function Transport() {
                   ))}
                   {flightData.source === 'mock' && !flightData.loading && flightData.flights.length > 0 && (
                     <div className="tr-source-note">
-                      ℹ️ Demo data shown. Add Duffel API credentials for live prices.
+                      Demo data shown. Add Duffel API credentials for live prices.
                     </div>
                   )}
                 </div>
@@ -596,7 +596,7 @@ export default function Transport() {
                   ))}
                   {!trainData.loading && trainData.options.length > 0 && (
                     <p className="tr-source-note">
-                      ℹ️ Train prices are estimates. Book via national rail operators.
+                      Train prices are estimates. Book via national rail operators.
                     </p>
                   )}
                 </div>
@@ -622,7 +622,7 @@ export default function Transport() {
                   ))}
                   {!busData.loading && busData.options.length > 0 && (
                     <p className="tr-source-note">
-                      ℹ️ Bus prices are estimates. Book via FlixBus, BlaBlaBus etc.
+                      Bus prices are estimates. Book via FlixBus, BlaBlaBus etc.
                     </p>
                   )}
                 </div>
@@ -630,9 +630,9 @@ export default function Transport() {
             </section>
           )}
 
-          {/* ════════════════════════════════════════════════
+          {/* 
               SECTION 2 — Local: between attractions
-          ════════════════════════════════════════════════ */}
+           */}
           <section className="tr-section tr-section-local" aria-labelledby="local-heading">
             <h2 id="local-heading" className="tr-section-title">
               <span className="tr-section-icon">🏙️</span>
