@@ -5,9 +5,7 @@ import fetch from 'node-fetch'
 const app  = express()
 const PORT = 3001
 
-// ─────────────────────────────────────────────────────────
-// Google Maps / Places config
-// ─────────────────────────────────────────────────────────
+// google maps
 const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY
 if (!GOOGLE_API_KEY) {
   console.error('GOOGLE_MAPS_API_KEY is not set. Add it to your .env file.')
@@ -16,7 +14,7 @@ if (!GOOGLE_API_KEY) {
 
 const PLACES_BASE = 'https://maps.googleapis.com/maps/api/place'
 
-// ── Text search (used by attractions, accommodation, restaurants) ──
+// Text search (used by attractions, accommodation, restaurants)
 async function textSearch(location, type, limit) {
   const query = `${type.replace(/_/g, ' ')} in ${location}`
   const url = `${PLACES_BASE}/textsearch/json?query=${encodeURIComponent(query)}&key=${GOOGLE_API_KEY}`
@@ -86,12 +84,7 @@ app.get('/api/places/photo', async (req, res) => {
   }
 })
 
-// ─────────────────────────────────────────────────────────
-// Amadeus Transport API
-// ─────────────────────────────────────────────────────────
-// ─────────────────────────────────────────────────────────
-// Duffel API config
-// ─────────────────────────────────────────────────────────
+// duffel
 const DUFFEL_KEY  = process.env.DUFFEL_API_KEY
 const DUFFEL_BASE = 'https://api.duffel.com'
 
@@ -109,66 +102,6 @@ function duffelHeaders() {
   }
 }
 
-// ── Mock data generators ──────────────────────────────────
-
-const AIRLINES = [
-  { code: 'RO', name: 'TAROM',       logo: '🇷🇴' },
-  { code: 'W6', name: 'Wizz Air',    logo: '🟣' },
-  { code: 'FR', name: 'Ryanair',     logo: '🟡' },
-  { code: 'LH', name: 'Lufthansa',   logo: '🔵' },
-  { code: 'AF', name: 'Air France',  logo: '🔴' },
-  { code: 'BA', name: 'British Airways', logo: '🇬🇧' },
-  { code: 'EZY', name: 'easyJet',    logo: '🟠' },
-  { code: 'TK', name: 'Turkish Airlines', logo: '🇹🇷' },
-]
-
-function seededRandom(seed) {
-  let s = seed
-  return () => {
-    s = (s * 9301 + 49297) % 233280
-    return s / 233280
-  }
-}
-
-function mockFlights(from, to, date, adults = 1) {
-  const rand = seededRandom((from + to + date).split('').reduce((a, c) => a + c.charCodeAt(0), 0))
-  const count = 3 + Math.floor(rand() * 3)
-  const flights = []
-
-  for (let i = 0; i < count; i++) {
-    const airline = AIRLINES[Math.floor(rand() * AIRLINES.length)]
-    const depHour = 6 + Math.floor(rand() * 14)
-    const depMin  = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55][Math.floor(rand() * 12)]
-    const durationH = 1 + Math.floor(rand() * 4)
-    const durationM = Math.floor(rand() * 4) * 15
-    const arrHour = (depHour + durationH + (depMin + durationM >= 60 ? 1 : 0)) % 24
-    const arrMin  = (depMin + durationM) % 60
-    const stops   = rand() < 0.6 ? 0 : 1
-    const basePrice = 40 + Math.floor(rand() * 380)
-    const price   = basePrice * adults
-
-    flights.push({
-      id: `mock-flight-${i}-${from}-${to}`,
-      airline: airline.name,
-      airlineCode: airline.code,
-      airlineLogo: airline.logo,
-      departure: `${String(depHour).padStart(2, '0')}:${String(depMin).padStart(2, '0')}`,
-      arrival: `${String(arrHour).padStart(2, '0')}:${String(arrMin).padStart(2, '0')}`,
-      duration: `${durationH}h ${durationM > 0 ? durationM + 'm' : ''}`.trim(),
-      durationMins: durationH * 60 + durationM,
-      stops,
-      stopsLabel: stops === 0 ? 'Direct' : `${stops} stop`,
-      price,
-      pricePerPerson: basePrice,
-      currency: 'EUR',
-      cabin: 'Economy',
-      isMock: true,
-    })
-  }
-
-  return flights.sort((a, b) => a.price - b.price)
-}
-
 async function getGoogleTransitOptions(from, to, transitMode) {
   const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(from)}&destination=${encodeURIComponent(to)}&mode=transit&transit_mode=${transitMode}&alternatives=true&key=${GOOGLE_API_KEY}`
   try {
@@ -181,6 +114,13 @@ async function getGoogleTransitOptions(from, to, transitMode) {
       const transitStep = leg.steps.find(s => s.travel_mode === 'TRANSIT')
       const transitDetails = transitStep?.transit_details
       
+      const vType = transitDetails?.line?.vehicle?.type || ''
+      const isBus = vType.includes('BUS') || vType === 'COACH'
+      const isTrain = vType.includes('RAIL') || vType.includes('TRAIN') || vType === 'SUBWAY' || vType === 'TRAM'
+
+      if (transitMode === 'bus' && !isBus) return null
+      if (transitMode === 'train' && !isTrain) return null
+
       const provider = transitDetails?.line?.agencies?.[0]?.name || transitDetails?.line?.short_name || 'Transit Route'
       const departure = transitDetails?.departure_time?.text || '--:--'
       const arrival = transitDetails?.arrival_time?.text || '--:--'
@@ -202,15 +142,15 @@ async function getGoogleTransitOptions(from, to, transitMode) {
         isMock: false,
         isEstimate: true,
       }
-    })
+    }).filter(Boolean)
   } catch (err) {
     console.error(`Google Transit error (${transitMode}):`, err.message)
     return []
   }
 }
 
-// ── Duffel offer → internal shape converter ──────────────
 
+// duffle
 function duffelOfferToShape(offer) {
   try {
     const slice    = offer.slices?.[0]
@@ -262,8 +202,6 @@ function duffelOfferToShape(offer) {
     return null
   }
 }
-
-// ── Transport endpoints ──────────────────────────────────
 
 // GET /api/transport/iata?city=Bucharest
 app.get('/api/transport/iata', async (req, res) => {
