@@ -4,63 +4,59 @@ html, body {
   width: 100%;
   height: 100%;
 }
-
+ 
 h1 {
   margin-top: 1rem;
 }
-
+ 
 .days-container {
     display: flex;
     flex-direction: column;
     padding: calc(var(--spacing) / 2);
     gap: var(--spacing);
 }
-
-.attractions-container {
-    display: flex;
-    flex-direction: column;
-    margin-left: 5%;
-}
-
+ 
+ 
+ 
 .li-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
-
+ 
 .text-container {
     border: 1px solid var(--border-color);
     border-radius: 8px;
-
+ 
     &:hover {
         border: 2px solid var(--border-highlight);
         cursor: grab;
     }
 }
-
+ 
 .attraction-image {
   border-radius: 4px;
   overflow: hidden;
 }
-
+ 
 .list-image {
   width: 300px;
   height: 100px;
   transition: transform 0.3s ease-in-out;
 }
-
+ 
 .list-image:hover {
   transform: scale(1.2);
   cursor: pointer;
 }
-
-
+ 
+ 
 .attraction-title::before {
   content: "☆";
   font-size: 1.2rem;
   margin-right: 4px;
 }
-
+ 
 .day-card {
     background-color: white;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
@@ -68,17 +64,57 @@ h1 {
     border-radius: 8px;
     padding: calc(var(--spacing) / 2);
 }
-
+ 
+.day-card-content {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing);
+}
+ 
+.attractions-container {
+    display: flex;
+    flex-direction: column;
+    margin-left: 5%;
+    flex: 1;
+}
+ 
+.day-map-container {
+    flex: 1;
+    min-width: 300px;
+    position: relative;
+}
+ 
+.day-map-iframe {
+    width: 100%;
+    height: 100%;
+    min-height: 400px;
+    border: none;
+    border-radius: 8px;
+    position: sticky;
+    top: 20px;
+}
+ 
+@media (max-width: 768px) {
+    .day-card-content {
+        flex-direction: column;
+    }
+ 
+    .day-map-iframe {
+        min-height: 300px;
+        position: static;
+    }
+}
+ 
 :hover.attraction-card {
   border: 2px solid saddlebrown;
 }
-
+ 
 li {
   list-style: none;
   padding: 10px;
   margin-left: -2rem;
 }
-
+ 
 .item-type-label {
   display: inline-block;
   margin-bottom: 8px;
@@ -89,50 +125,50 @@ li {
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
-
+ 
 .item-type-transport {
   background: #e6f4ff;
   color: #0a4c8a;
 }
-
+ 
 .item-type-accommodation {
   background: #eaf8ef;
   color: #145a2c;
 }
-
+ 
 .item-type-restaurant {
   background: #fff4e8;
   color: #8a3f00;
 }
-
+ 
 .item-type-attraction {
   background: #f4ecff;
   color: #5b2f8a;
 }
-
+ 
 li .text {
     cursor: default;
 }
-
-
+ 
+ 
 ol, p, h3 {
     padding: 0px;
 }
-
-
+ 
+ 
 p {
     margin: 0.2rem;
 }
-
+ 
 h3 {
     margin: 0px;
     padding: 0px;
 }
-
+ 
 h1 {
   text-align: center;
 }
-
+ 
 .accommodation-review-section {
   background-color: white;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
@@ -141,14 +177,14 @@ h1 {
   padding: calc(var(--spacing) / 2);
   margin: calc(var(--spacing) / 2);
 }
-
+ 
 .accommodation-review-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
-
-
+ 
+ 
 .review-footer-actions, 
 .register-actions-footer {
   display: flex;            /* Aligns items horizontally */
@@ -158,7 +194,7 @@ h1 {
   padding: 20px 0;
   width: 100%;
 }
-
+ 
 /* Base style for both buttons */
 .review-footer-actions button,
 .register-actions-footer button {

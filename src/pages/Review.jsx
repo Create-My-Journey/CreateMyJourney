@@ -4,7 +4,7 @@ import './Review.css'
 import { useNavigate, useOutletContext, useLocation } from 'react-router-dom'
 import { createItinerary, updateItinerary, deleteItinerary, saveReviewSelections, toIsoDate, getAccommodations, getRestaurants, getAttractions, getTransport, getItinerary, deleteItineraryContent } from '../services/databaseApi'
 import { buildDayActivityPlan, splitItemsEvenlyAcrossDays } from '../services/itinerarySplit'
-
+ 
 function nightsFromDateRange(departureDate, returnDate) {
     if (!departureDate || !returnDate) return null;
     const startMs = new Date(`${departureDate}T00:00:00`).getTime();
@@ -13,21 +13,21 @@ function nightsFromDateRange(departureDate, returnDate) {
     const diffDays = Math.round((endMs - startMs) / (1000 * 60 * 60 * 24));
     return Math.max(1, diffDays);
 }
-
+ 
 function toLocalIsoDate(value) {
     if (!value) return null;
     const date = value instanceof Date ? value : new Date(value);
     if (Number.isNaN(date.getTime())) return null;
-
+ 
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
 }
-
+ 
 function parseSavedOrderMetadata(notes) {
     const match = String(notes ?? '').match(/^\[day:(\d+),order:(\d+)\]\s*(.*)$/)
-
+ 
     if (!match) {
         return {
             dayIndex: null,
@@ -35,7 +35,7 @@ function parseSavedOrderMetadata(notes) {
             noteText: String(notes ?? ''),
         }
     }
-
+ 
     return {
         dayIndex: Number.parseInt(match[1], 10) - 1,
         orderIndex: Number.parseInt(match[2], 10) - 1,
@@ -44,7 +44,7 @@ function parseSavedOrderMetadata(notes) {
 }
 function buildSavedDayActivityPlan({ attractions = [], restaurants = [], transport = [] }) {
     const dayMap = new Map()
-
+ 
     const pushItem = (item) => {
         const dayIndex = Number.isInteger(item.dayIndex) ? item.dayIndex : 0
         const orderIndex = Number.isInteger(item.orderIndex) ? item.orderIndex : Number.MAX_SAFE_INTEGER
@@ -53,44 +53,86 @@ function buildSavedDayActivityPlan({ attractions = [], restaurants = [], transpo
         }
         dayMap.get(dayIndex).push({ ...item, orderIndex })
     }
-
+ 
     attractions.forEach(pushItem)
     restaurants.forEach(pushItem)
     transport.forEach(pushItem)
-
+ 
     const maxDayIndex = Math.max(-1, ...Array.from(dayMap.keys()))
     return Array.from({ length: Math.max(1, maxDayIndex + 1) }, (_, dayIndex) =>
         (dayMap.get(dayIndex) || []).sort((left, right) => left.orderIndex - right.orderIndex),
     )
 }
-
+ 
 function formatTransportLabel(vehicleType, origin, destination) {
     const type = String(vehicleType ?? 'Transport').trim()
     const readableType = type ? type.charAt(0).toUpperCase() + type.slice(1) : 'Transport'
     return `${readableType}: ${origin} -> ${destination}`
 }
-
-function Day({dayIndex, attractions, onDragStart, onDragOver, onDrop}) {
+ 
+function DayMap({ attractions, cityContext }) {
+    const MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
+    if (!MAPS_KEY) return null;
+ 
+    // Filter out transport to just pin real places
+    const places = attractions.filter(a => a.itemType !== 'Transport');
+    if (places.length === 0) return null;
+ 
+    // Google Maps Embed URL for a single place
+    if (places.length === 1) {
+        const query = encodeURIComponent(`${places[0].name}, ${cityContext}`);
+        const url = `https://www.google.com/maps/embed/v1/place?key=${MAPS_KEY}&q=${query}`;
+        return (
+            <div className="day-map-container">
+                <iframe className="day-map-iframe" src={url} allowFullScreen loading="lazy"></iframe>
+            </div>
+        );
+    }
+ 
+    // Google Maps Embed URL for directions (multiple places)
+    const origin = encodeURIComponent(`${places[0].name}, ${cityContext}`);
+    const destination = encodeURIComponent(`${places[places.length - 1].name}, ${cityContext}`);
+ 
+    let url = `https://www.google.com/maps/embed/v1/directions?key=${MAPS_KEY}&origin=${origin}&destination=${destination}`;
+ 
+    if (places.length > 2) {
+        const waypoints = places.slice(1, -1)
+            .map(p => encodeURIComponent(`${p.name}, ${cityContext}`))
+            .join('|');
+        url += `&waypoints=${waypoints}`;
+    }
+ 
+    return (
+        <div className="day-map-container">
+            <iframe className="day-map-iframe" src={url} allowFullScreen loading="lazy"></iframe>
+        </div>
+    );
+}
+ 
+function Day({dayIndex, attractions, onDragStart, onDragOver, onDrop, cityContext}) {
     return (
         <section className="day-card">
             <h2> 🛈 Day {dayIndex + 1}</h2>
-            <ol className="attractions-container">
-                { attractions.map((attraction, index) => {
-                    return <Attraction 
-                        key={attraction.id || index}
-                        index={index}
-                        dayIndex={dayIndex}
-                        onDragStart={onDragStart}
-                        onDragOver={onDragOver}
-                        onDrop={onDrop}
-                        attraction={attraction}
-                    />
-                })}
-            </ol>
+            <div className="day-card-content">
+                <ol className="attractions-container">
+                    { attractions.map((attraction, index) => {
+                        return <Attraction 
+                            key={attraction.id || index}
+                            index={index}
+                            dayIndex={dayIndex}
+                            onDragStart={onDragStart}
+                            onDragOver={onDragOver}
+                            onDrop={onDrop}
+                            attraction={attraction}
+                        />
+                    })}
+                </ol>
+                <DayMap attractions={attractions} cityContext={cityContext} />
+            </div>
         </section>
     )
 }
-
+ 
 function Attraction({attraction, index, dayIndex, onDragStart, onDragOver, onDrop}) {
     return (
         <li
@@ -110,7 +152,7 @@ function Attraction({attraction, index, dayIndex, onDragStart, onDragOver, onDro
         </li>
     )
 }
-
+ 
 function Review() {
     // this receives selected items from all previous planner pages
     // and it has to split it between multiple days
@@ -122,7 +164,7 @@ function Review() {
     const [isLoading, setIsLoading] = useState(false);
     const isFinalReview = location.state?.reviewMode === 'final' || location.state?.fromTransport;
     const showTransportButton = !isFinalReview;
-
+ 
     const getCurrentUserId = () => {
         try {
             const rawUser = localStorage.getItem('cmj_user');
@@ -134,14 +176,14 @@ function Review() {
             return null;
         }
     };
-
+ 
     // When opening review directly from Home, hydrate context with the route state.
     useEffect(() => {
         if (!location.state?.itinerary_id) return;
         if (tripDetails?.itinerary_id === location.state.itinerary_id) return;
         setTripDetails((prev) => ({ ...prev, ...location.state }));
     }, [location.state, setTripDetails, tripDetails?.itinerary_id]);
-    
+ 
     // Load existing selections when editing a saved itinerary.
     useEffect(() => {
         const routeItineraryId = location.state?.itinerary_id ?? null
@@ -149,9 +191,9 @@ function Review() {
             setIsLoading(false);
             return;
         }
-
+ 
         setIsLoading(true);
-
+ 
         const loadExistingSelections = async () => {
             try {
                 const [accommodations, restaurants, attractions, transport] = await Promise.all([
@@ -160,9 +202,9 @@ function Review() {
                     getAttractions(routeItineraryId),
                     getTransport(routeItineraryId),
                 ]);
-
+ 
                 const stripDayPrefix = (s) => String(s ?? '').replace(/^\s*Day\s*\d+:\s*/i, '').trim()
-
+ 
                 const mappedAccommodations = accommodations.map(a => ({
                     id: a.place_id,
                     name: stripDayPrefix(a.name),
@@ -179,7 +221,7 @@ function Review() {
                     tags: a.property_type ? [a.property_type] : ['accommodation'],
                     ...parseSavedOrderMetadata(a.notes),
                 }));
-
+ 
                 const mappedRestaurants = restaurants.map(r => ({
                     id: r.place_id,
                     itemType: 'Restaurant',
@@ -195,7 +237,7 @@ function Review() {
                     tags: r.cuisine_type ? [r.cuisine_type] : ['restaurant'],
                     ...parseSavedOrderMetadata(r.notes),
                 }));
-
+ 
                 const mappedAttractions = attractions.map(a => ({
                     id: a.place_id,
                     itemType: 'Attraction',
@@ -211,7 +253,7 @@ function Review() {
                     tags: a.category ? [a.category] : ['attraction'],
                     ...parseSavedOrderMetadata(a.notes),
                 }));
-
+ 
                 const mappedTransport = transport.map(t => ({
                     id: t.id,
                     option_id: t.booking_reference ?? null,
@@ -232,7 +274,7 @@ function Review() {
                 const dayActivityPlanFromSaved = hasSavedOrder
                     ? buildSavedDayActivityPlan({ attractions: mappedAttractions, restaurants: mappedRestaurants, transport: mappedTransport })
                     : null;
-
+ 
                 setTripDetails(prev => ({
                     ...prev,
                     itinerary_id: routeItineraryId,
@@ -249,23 +291,23 @@ function Review() {
                 setIsLoading(false);
             }
         };
-
+ 
         loadExistingSelections();
     }, [location.state?.itinerary_id, setTripDetails]);
-        
+ 
     console.log(tripDetails)
     const transportList = tripDetails.transport || []
     const accommodationList = tripDetails.accommodation || []
     const restaurantList = tripDetails.restaurants || []
     const attractionList = tripDetails.attractions || []
     const showTransportInline = isFinalReview
-
+ 
     const activityDays = tripDetails.dayActivityPlan || buildDayActivityPlan({
         attractions: attractionList,
         restaurants: restaurantList,
         nights: tripDetails.nights,
     });
-
+ 
     const transportItems = transportList.map(item => ({
         ...item,
         itemType: 'Transport',
@@ -273,14 +315,14 @@ function Review() {
         orderIndex: Number.isInteger(item.orderIndex) ? item.orderIndex : null,
     }));
     const transportByDay = activityDays.map((_, dayIndex) => transportItems.filter((item) => item.dayIndex === dayIndex));
-
+ 
     // Activities only (without transports) for initial review
     const activitiesDays = activityDays.map((dayActivities) => dayActivities);
-
+ 
     // If the reconstructed activityDays already include transport items (saved reconstruction),
     // use them as-is. Otherwise, interleave transports into activity lists at saved positions.
     const activityDaysContainTransport = activityDays.some(day => day.some(item => (item.itemType || '').toLowerCase() === 'transport'));
-
+ 
     const splitDays = activityDaysContainTransport
         ? activityDays
         : activityDays.map((dayActivities, dayIndex) => {
@@ -289,41 +331,41 @@ function Review() {
                 .sort((left, right) => (left.orderIndex ?? Number.MAX_SAFE_INTEGER) - (right.orderIndex ?? Number.MAX_SAFE_INTEGER));
             const result = [];
             let transportCursor = 0;
-
+ 
             const pushMatchingTransports = (targetIndex) => {
                 while (transportCursor < dayTransports.length) {
                     const transport = dayTransports[transportCursor];
                     const adjustedOrderIndex = Number.isInteger(transport.orderIndex)
                         ? Math.max(0, transport.orderIndex - accommodationOffset)
                         : null;
-
+ 
                     if (adjustedOrderIndex !== targetIndex) {
                         break;
                     }
-
+ 
                     result.push(transport);
                     transportCursor += 1;
                 }
             };
-
+ 
             pushMatchingTransports(0);
-
+ 
             dayActivities.forEach((activity, activityIndex) => {
                 result.push(activity);
                 pushMatchingTransports(activityIndex + 1);
             });
-
+ 
             while (transportCursor < dayTransports.length) {
                 result.push(dayTransports[transportCursor]);
                 transportCursor += 1;
             }
-
+ 
             return result;
         });
-
+ 
     const [attractions, setAttractions] = useState(showTransportInline ? splitDays : activitiesDays);
     const [draggedItem, setDraggedItem] = useState(null);
-
+ 
     // Update attractions whenever tripDetails selections change (e.g., after loading existing itinerary)
     useEffect(() => {
         setAttractions(showTransportInline ? splitDays : activitiesDays);
@@ -339,31 +381,31 @@ function Review() {
         const data = { attractionIndex: index, dayIndex: dayIndex };
         setDraggedItem(data)
     };
-
+ 
     const handleDragOver = (e) => e.preventDefault();
-
+ 
     const handleDrop = (e, targetIndex, targetDayIndex) => {
         e.preventDefault();
         const newList = [...attractions];
         const removedAttraction = newList[draggedItem['dayIndex']].splice(draggedItem['attractionIndex'], 1);
         newList[targetDayIndex].splice(targetIndex, 0, removedAttraction[0]);
-
+ 
         setAttractions(newList);
         setDraggedItem(null);
     };
-
+ 
     const handleCreateJourney = async () => {
         if (isSaving) return;
-
+ 
         const userId = getCurrentUserId();
         if (!userId) {
             setSaveError('Please log in before saving a journey.');
             return;
         }
-
+ 
         setIsSaving(true);
         setSaveError('');
-
+ 
         try {
             const accommodationItems = accommodationList.map((item) => ({
                 ...item,
@@ -375,11 +417,11 @@ function Review() {
                     ? daysToSaveBase.map((day, index) => (index === 0 ? [...accommodationItems, ...day] : day))
                     : [accommodationItems])
                 : daysToSaveBase;
-
+ 
             const existingItinerary = tripDetails.itinerary_id
                 ? await getItinerary(tripDetails.itinerary_id)
                 : null;
-
+ 
             const departureDate = toLocalIsoDate(tripDetails.date)
                 ?? toIsoDate(tripDetails.date)
                 ?? existingItinerary?.departure_date
@@ -393,7 +435,7 @@ function Review() {
             const returnDateObj = new Date(departureBase);
             returnDateObj.setDate(returnDateObj.getDate() + nights);
             const returnDate = toLocalIsoDate(returnDateObj) ?? departureDate;
-
+ 
             const itineraryUpdate = {
                 destination: tripDetails.location ?? 'Unknown destination',
                 budget: null,
@@ -401,9 +443,9 @@ function Review() {
                 return_date: returnDate,
                 group_size: Math.max(1, Number(tripDetails.people) || Number(existingItinerary?.group_size) || 1),
             };
-
+ 
             let itineraryId = tripDetails.itinerary_id;
-
+ 
             if (itineraryId) {
                 // Update existing itinerary: delete old selections, update metadata, then save new selections
                 await deleteItineraryContent(itineraryId);
@@ -415,15 +457,15 @@ function Review() {
                     user_id: userId,
                     ...itineraryUpdate,
                 });
-
+ 
                 if (!itinerary?.itinerary_id) {
                     throw new Error('Could not create itinerary.');
                 }
-
+ 
                 itineraryId = itinerary.itinerary_id;
                 await saveReviewSelections(itineraryId, daysToSave);
             }
-
+ 
             sessionStorage.setItem('last_saved_itinerary_id', String(itineraryId));
             sessionStorage.removeItem('active_trip');
             routerNavigate('/', { state: { savedItineraryId: itineraryId } });
@@ -433,17 +475,17 @@ function Review() {
             setIsSaving(false);
         }
     };
-
+ 
     const handleDeleteJourney = async () => {
         if (isSaving) return;
         if (!tripDetails.itinerary_id) return;
-
+ 
         const confirmed = window.confirm('Delete this itinerary? This action cannot be undone.');
         if (!confirmed) return;
-
+ 
         setIsSaving(true);
         setSaveError('');
-
+ 
         try {
             await deleteItinerary(tripDetails.itinerary_id);
             sessionStorage.removeItem('active_trip');
@@ -455,13 +497,13 @@ function Review() {
             setIsSaving(false);
         }
     };
-
+ 
     return (
         <main className="review-page">
             <h1>Review Trip Details</h1>
-            
+ 
             {isLoading && <p>Loading itinerary...</p>}
-            
+ 
             {!isLoading && (
                 <>
                     {accommodationList.length > 0 ? (
@@ -483,7 +525,7 @@ function Review() {
                             </div>
                         </section>
                     ) : null}
-
+ 
                     <div className="days-container">
                         { attractions.map((day, index) => (
                             <Day
@@ -493,10 +535,11 @@ function Review() {
                                 onDragStart={handleDragStart}
                                 onDragOver={handleDragOver}
                                 onDrop={handleDrop}
+                                cityContext={tripDetails.location || ''}
                             />
                         )) }
                     </div>
-
+ 
                     <div className="review-footer-actions">
                         <button 
                             className="btn-secondary" 
@@ -537,5 +580,5 @@ function Review() {
         </main>
     )
 }
-
+ 
 export default Review
