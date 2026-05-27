@@ -369,17 +369,18 @@ export async function saveReviewSelections(itineraryId, days) {
     for (let orderIndex = 0; orderIndex < dayItems.length; orderIndex += 1) {
       const item = dayItems[orderIndex]
       const type = String(item.itemType ?? '').toLowerCase()
+      const inferredType = type || (item.option_id || item.vehicle_type || String(item.category ?? '').toLowerCase() === 'transport' ? 'transport' : '')
 
-      if (type === 'accommodation') {
+      if (inferredType === 'accommodation') {
         await addAccommodation(itineraryId, toAccommodationRow(itineraryId, item, dayIndex, orderIndex))
         summary.accommodation += 1
-      } else if (type === 'restaurant') {
+      } else if (inferredType === 'restaurant') {
         await addRestaurant(itineraryId, toRestaurantRow(itineraryId, item, dayIndex, orderIndex))
         summary.restaurants += 1
-      } else if (type === 'attraction') {
+      } else if (inferredType === 'attraction') {
         await addAttraction(itineraryId, toAttractionRow(itineraryId, item, dayIndex, orderIndex))
         summary.attractions += 1
-      } else if (type === 'transport') {
+      } else if (inferredType === 'transport') {
         await addTransport(itineraryId, toTransportRow(itineraryId, item, dayIndex, orderIndex))
         summary.transport += 1
       }

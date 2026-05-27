@@ -114,23 +114,40 @@ export default function Transport() {
 
 	const handleConfirm = () => {
 		const chosenTypes = TRANSPORT_TYPES.filter((type) => selectedTypes[type])
+		const firstDayAccommodationOffset = tripDetails.accommodation?.length || 0
 		const selectedTransport = segments.map((segment) => {
 			const chosenOption = segment.options.find((option) => option.id === selectedBySegment[segment.id])
 			if (!chosenOption) return null
+			const segmentOrderIndex = Number.parseInt(segment.id.split('-').pop(), 10)
 
-			// also store the option id
+			// derive vehicle type from the chosen option id or label
+			const optionSuffix = String(chosenOption.id ?? '').split('-').pop().toLowerCase()
+			let vehicleType = 'transport'
+			if (['taxi', 'bus', 'transit', 'flight'].includes(optionSuffix)) vehicleType = optionSuffix
+			else {
+				const label = String(chosenOption.label ?? '').toLowerCase()
+				if (label.includes('taxi')) vehicleType = 'taxi'
+				else if (label.includes('bus')) vehicleType = 'bus'
+				else if (label.includes('flight')) vehicleType = 'flight'
+				else if (label.includes('transit') || label.includes('train')) vehicleType = 'transit'
+			}
+
 			return {
 				id: `${segment.id}`,
 				option_id: chosenOption.id,
 				name: chosenOption.label,
-				category: 'Transport',
+				itemType: 'Transport',
+				category: vehicleType,
 				hours: segment.title,
 				price: 'Varies',
 				rating: 4.6,
-				tags: ['Transport', ...chosenTypes],
+				tags: [vehicleType],
 				description: chosenOption.description,
 				image: null,
 				dayIndex: segment.dayIndex,
+				orderIndex: segment.dayIndex === 0
+					? segmentOrderIndex + firstDayAccommodationOffset
+					: segmentOrderIndex,
 			}
 		}).filter(Boolean)
 
